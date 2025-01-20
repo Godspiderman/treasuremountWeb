@@ -1,0 +1,222 @@
+.AddPet-page {
+    .AddPet-container {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+        .AddPet-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+
+            h2{
+                font-weight: 700;
+                @media (max-width : 500px) {
+                    font-size: 1rem;
+                    }
+            }
+
+            .btns{
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                span{
+                    display: flex;
+                    align-items: center;
+                    cursor: pointer;
+                    padding: 10px;
+                    border-radius: 5px;
+                    color: white;
+                    background-color: var(--btn-background-color);
+                    opacity: 0.6;
+                    transition: 0.3s;
+                    @media (max-width : 500px) {
+                        font-size: 0.8rem;
+                        }
+                    &:hover {
+                        opacity: 1;
+                    }
+                    p{
+                        color: #FFFFFF;
+                        display: inline;
+                       margin-left: 10px;
+                     }
+                }
+    
+    
+                    }
+        }
+        .table-filters {
+            padding: 0 15px;
+            display: flex;
+            margin-bottom: 20px;
+            // @media (max-width : 1024px) {
+            // flex-direction: column;
+            //   }
+            .search-filter {
+              display: flex;
+              align-items: center;
+              border: 1px solid #ab8262;
+              border-radius: 50px;
+              padding: 4px 10px;
+              width: 250px;
+          
+              svg {
+                color: #ab8262;
+              }
+          
+              label {
+                font-size: 1rem;
+              }
+          
+              input {
+                border: none;
+                outline: none;
+                margin-left: 10px;
+                font-size: 1rem;
+              }
+            }
+        }
+        .custom-table {
+            background-color: #ffffff;
+            font-size: 0.9rem;
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            border: none;
+            padding: 10px;
+            overflow: auto;
+          
+            thead {
+              padding: 10px;
+              background-color: #ab8262;
+          
+              tr {
+                text-align: justify;
+          
+                th {
+                  color:  #ffffff;
+                  padding: 15px;
+                  border: none;
+                  text-align: center;
+                }
+              }
+            }
+          
+            tbody {
+              tr {
+                .text-center {
+                  text-align: center !important;
+                }
+          
+                .w-10 {
+                  width: 10% !important;
+                }
+          
+                td {
+                  padding: 15px 10px;
+                  border: none;
+                  font-size: 0.8rem;
+          
+                  .active {
+                    color: white;
+                    background-color: #4caf50;
+                  }
+          
+                  .inactive {
+                    color: white;
+                    background-color:  #f44336;
+                  }
+          
+                  p {
+                    width: 150px;
+                    margin: 0 auto;
+                    padding: 2px;
+                    border-radius: 50px;
+                    text-align: center;
+                  }
+          
+                  .description {
+                    p {
+                      font-size: 0.9rem;
+                      padding: 5px 30px;
+                      text-align: start;
+                      font-weight: 600;
+                    }
+          
+                    span {
+                      font-size: 0.8rem;
+                      font-weight: 500;
+                    }
+          
+                    .amount-payment {
+                      color: #219653;
+                      font-weight: 600;
+                    }
+          
+                    .attachment {
+                      display: flex;
+                      flex-direction: column;
+          
+                      input {
+                        display: none;
+                      }
+          
+                      label {
+                        width: 100px;
+                        padding: 5px 10px;
+                        margin: 0 30px;
+                        border: 1px solid #4caf50;
+                      }
+          
+                      label:hover {
+                        color: #de0611;
+                        border: 1px solid #de0611;
+                      }
+                    }
+                  }
+          
+                  .icons {
+                    color: #ffffff;
+                    font-size: 1rem;
+          
+                    a,
+                    svg {
+                      cursor: pointer;
+                      color: #ffffff;
+                      margin: 0 5px;
+                    }
+          
+                    a:hover,
+                    svg:hover {
+                      color: #ab8262;
+                    }
+                  }
+          
+                  svg {
+                    cursor: pointer;
+                    font-size: 1.2rem;
+                    margin-right: 10px;
+                  }
+          
+                  svg:hover {
+                    color: #ab8262;
+                  }
+                }
+              }
+          
+              tr:nth-child(odd) {
+                background-color:  #f2f2f2c4;
+              }
+            }
+          
+            table-layout: fixed;
+          
+            th,
+            td {
+              border: none;
+            }
+          }
+    }
+}

@@ -1,0 +1,175 @@
+.profile {
+
+    .profile-container {
+      display: flex;
+      transition: all 0.3s ease;
+  
+      .profile-sidenav {
+        width: 25%;
+        min-height: 90vh;
+        padding: 15px;
+        background-color: rgba(231, 231, 231, 0.409);
+        transition: width 0.3s ease; 
+  position: relative;
+.menu{
+    position: absolute;
+    right: -32px;
+    top: 8px;
+    font-size: 2rem;
+    display: none;
+}
+        @media (max-width: 854px) {
+          width: 0; 
+        
+          .menu{
+            display: block;
+          }
+          .profile-sidenav.open {
+            width: 80%;
+          }
+        }
+
+        .sideNav-lists {
+
+            .sideNav-list {
+              cursor: pointer;
+              display: flex;
+              margin-bottom: 5px;
+              align-items: center;
+              color: var(--text-color);
+              text-decoration: none;
+              padding:10px;
+              border-radius: 10px;
+              margin-bottom: 5px;
+              font-size: 0.9rem;
+              font-weight: 400;
+              width: 100%;
+              gap: 25px;
+          
+              svg {
+                font-size: 1.2rem;
+                color: var(--sidemenu-icon-color);
+                font-weight: 700;
+              }
+          
+              p {
+                margin-left: 10px;
+              }
+            }
+          
+            .sideNav-list:hover {
+              background-color: var(--sidemenu-btn-hover);
+              color: var(--sidemenu-btn-hover-text) !important;
+              font-weight: 700;
+          
+              svg {
+                color: var(--sidemenu-btn-hover-text);
+              }
+          
+              .s-tex {
+                svg {
+                  color: var(--sidemenu-btn-hover-text);
+                }
+              }
+            }
+          
+            .sideNav-list.active {
+              background-color: var(--sidemenu-btn-active);
+              color: var(--sidemenu-btn-active-text) !important;
+              font-weight: 700;
+          
+              svg {
+                color: var(--sidemenu-btn-active-text);
+              }
+          
+              .s-tex {
+                svg {
+                  color: var(--sidemenu-btn-active-text);
+                }
+              }
+            }
+          }
+          
+      }
+  
+      /* When the sidebar is open, it takes up 25% of the screen */
+      .profile-sidenav.open {
+        width: 25%;
+        transform: translateX(0px);
+
+      }
+   .profile-sidenav.closed {
+        width: 0%;
+        transform: translateX(-150px);
+
+      }
+      /* Profile content */
+      .profile-content {
+        width: 75%;
+        // background-color: rgb(138, 93, 35);
+        padding: 10px;
+        transition: width 0.3s ease; /* Smooth transition for width change */
+  
+        .profile-head {
+          display: flex;
+          align-items: center;
+        //   justify-content: space-between; /* Space between the menu icon and text */
+  
+          .menu {
+            margin-right: 10px;
+            cursor: pointer; 
+          }
+  
+          .text {
+            h2 {
+              margin: 0;
+              padding: 0;
+            }
+          }
+        }
+
+        .main-content{
+
+            padding: 10px;
+        }
+      }
+  
+     
+      .profile-sidenav.closed + .profile-content {
+        width: 100%;
+
+
+      }
+  
+
+      @media (max-width: 854px) {
+        flex-direction: column; 
+      
+        .profile-sidenav {
+     
+          position: absolute;
+          top: 0;
+          left: 0;
+          z-index: 999;
+          height: 100%; 
+          background-color: white;
+          display: none;
+        transition: width 0.3s ease; 
+
+        }
+  
+        .profile-sidenav.open {
+          display: block; 
+          width: 80%;
+        }
+        .profile-sidenav.closed {
+           width: 0%;
+          }
+  
+        .profile-content {
+          width: 100%; 
+        }
+      }
+    }
+  }
+  

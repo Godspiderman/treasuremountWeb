@@ -1,0 +1,169 @@
+.Pet-add {
+    .Pet-add-container {
+        .Pet-add-contents {
+            .Pet-add-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 20px;
+
+                h2 {
+                    font-weight: 700;
+                }
+            }
+
+            .user-data-1 {
+                .form-2 {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    padding: 20px;
+
+
+                    .form1 {
+
+                        margin: 5px 0;
+                        width: calc(50% - 10px);
+
+                        label {
+                            display: block;
+                            margin-bottom: 5px;
+                        }
+
+                        input,
+                        select,
+                        textarea {
+                            font-size: 16px;
+                            line-height: 28px;
+                            padding: 8px 16px;
+                            width: 100%;
+                            min-height: 44px;
+                            border: unset;
+                            border-radius: 4px;
+                            outline-color: var(--primary-color);
+                            background-color: rgb(255, 255, 255);
+                            box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px,
+                                rgba(0, 0, 0, 0) 0px 0px 0px 0px,
+                                rgba(0, 0, 0, 0) 0px 0px 0px 0px,
+                                rgba(60, 66, 87, 0.16) 0px 0px 0px 1px,
+                                rgba(0, 0, 0, 0) 0px 0px 0px 0px,
+                                rgba(0, 0, 0, 0) 0px 0px 0px 0px,
+                                rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+                        }
+                    }
+                }
+            }
+
+            .edit-head {
+                display: flex;
+                align-items: center;
+                justify-content: end;
+                padding: 20px;
+
+                .edit-btn {
+                    display: flex;
+                    align-items: center;
+
+                    span {
+                        display: flex;
+                        align-items: center;
+                        cursor: pointer;
+                        padding: 10px 25px;
+                        border-radius: 5px;
+                        color: white;
+                        background-color: var(--btn-background-color);
+                        opacity: 0.6;
+                        transition: 0.3s;
+
+                        &:hover {
+                            opacity: 1;
+                        }
+
+                        p {
+                            color: #ffffff;
+                            display: inline;
+                            margin-left: 10px;
+                        }
+                    }
+                }
+
+                .add-btn-course {
+                    display: flex;
+                    align-items: center;
+                    border-style: none;
+                    cursor: pointer;
+                    padding: 10px 25px;
+                    border-radius: 5px;
+                    color: white;
+                    background-color: var(--btn-background-color);
+                    opacity: 0.6;
+                    transition: 0.3s;
+
+                    &:hover {
+                        opacity: 1;
+                    }
+                }
+            }
+
+            .btn-container {
+                padding: 20px;
+                display: flex;
+                justify-content: space-between;
+                width: calc(100% - 15px);
+
+                .alert-msg {
+                    display: flex;
+                    width: 60%;
+                    gap: 5px;
+
+                    .error {
+                        color: red;
+                    }
+                }
+
+                .content-btn {
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+                    gap: 20px;
+
+                    .update-btn {
+                        cursor: pointer;
+                        padding: 10px 70px;
+                        border-radius: 5px;
+                        color: white;
+                        background-color: #ab8262;
+                        border: none;
+                        text-align: center;
+                        font-weight: 700;
+                        font-size: 1rem;
+                        opacity: 0.6;
+                        transition: 0.3s;
+
+                        &:hover {
+                            opacity: 1;
+                        }
+                    }
+
+                    .cancel-btn {
+                        cursor: pointer;
+                        padding: 10px 70px;
+                        border-radius: 5px;
+                        color: #ab8262;
+                        background-color: #ffffff;
+                        border: 1px solid #ab8262 !important;
+                        text-align: center;
+                        font-weight: 700;
+                        font-size: 1rem;
+                        transition: 0.3s;
+
+                        &:hover {
+                            color: #ffffff;
+                            background-color: #ab8262;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
