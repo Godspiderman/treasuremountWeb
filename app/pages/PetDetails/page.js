@@ -1049,7 +1049,7 @@ const PetDetails = () => {
         </div>
 
 
-        <div className="alsoLike">
+        {/* <div className="alsoLike">
           <div className="alsoLikeHead">
             <h2>You Might Also Like</h2>
           </div>
@@ -1089,7 +1089,7 @@ const PetDetails = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

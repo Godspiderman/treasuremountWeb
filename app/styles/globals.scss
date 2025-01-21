@@ -438,7 +438,7 @@ a {
 
         svg {
           color: #a66b4f;
-          font-size: 18px;
+          font-size: 24px;
         }
 
       }
@@ -4429,6 +4429,7 @@ body.menu-open::after {
       .detailsSection {
         .toggle-button {
           width: 100%;
+          margin-top: 20px;
           margin-bottom: 10px;
           padding: 10px 20px;
           background-color: #a67b5b;
