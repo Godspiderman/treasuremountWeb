@@ -20,6 +20,7 @@ import { RiCloseFill } from "react-icons/ri";
 
 
 import { setSearchQuery } from "@/app/redux/slices/searchSlice";
+import { API_URL } from "@/app/services/useAxiosInstance";
 
 const Navbar = () => {
   const router = useRouter();
@@ -40,7 +41,7 @@ const Navbar = () => {
   // Fetch Products function
   const fetchProducts = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/public/product/getAll");
+      const response = await axios.get(`${API_URL}/api/public/product/getAll`);
       setProductsData(response.data || []);
       setFilteredProducts(response.data || []);
       setPageCount(Math.ceil(response.data.length / 10)); 
@@ -129,7 +130,7 @@ const Navbar = () => {
       await Promise.all(
         products.map(async (product) => {
           const response = await axios.get(
-            `http://localhost:8080/api/public/productImages/getAll/${product.id}?positionId=1`
+            `${API_URL}/api/public/productImages/getAll/${product.id}?positionId=1`
           );
 
           if (response.data && response.data.length > 0) {

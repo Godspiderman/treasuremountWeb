@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import './ProductDetail.scss';
+import { API_URL } from '@/app/services/useAxiosInstance';
 
 
 const ProductDetail = () => {
@@ -14,7 +15,7 @@ const ProductDetail = () => {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const productResponse = await fetch('http://localhost:8080/api/public/resource/pet/getOne/18');
+                const productResponse = await fetch(`${API_URL}/api/public/resource/pet/getOne/18`);
                 const productData = await productResponse.json();
                 setProduct(productData);
             } catch (error) {
@@ -24,7 +25,7 @@ const ProductDetail = () => {
 
         const fetchImages = async () => {
             try {
-                const imagesResponse = await fetch('http://localhost:8080/api/public/productImages/getByProductId/18');
+                const imagesResponse = await fetch(`${API_URL}/api/public/productImages/getByProductId/18`);
                 const imagesData = await imagesResponse.json();
                 setImages(imagesData);
                 if (imagesData.length > 0) {

@@ -8,11 +8,12 @@ import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import Pagination from "@/app/utils/Pagenation/Pagenation";
 import axios from "axios";
+import { API_URL } from "@/app/services/useAxiosInstance";
 
 
 async function fetchProducts(subCategoryId = 0) {
   const response = await fetch(
-    `http://localhost:8080/api/public/product/getAll?userId=0&categoryId=1&subCategoryId=${subCategoryId}&minPrice=0&maxPrice=0&isAdmin=false`,
+    `${API_URL}/api/public/product/getAll?userId=0&categoryId=1&subCategoryId=${subCategoryId}&minPrice=0&maxPrice=0&isAdmin=false`,
     { cache: "no-store" }
   );
   if (!response.ok) {
@@ -41,7 +42,7 @@ export default function PetsPage() {
         await Promise.all(
             products.map(async (product) => {
                 const response = await axios.get(
-                    `http://localhost:8080/api/public/productImages/getAll/${product.id}?positionId=1`
+                    `${API_URL}/api/public/productImages/getAll/${product.id}?positionId=1`
                 );
                 if (response.data && response.data.length > 0) {
                     images[product.id] = response.data[0].imageUrl;

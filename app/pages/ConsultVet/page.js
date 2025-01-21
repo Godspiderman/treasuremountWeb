@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IoLocationSharp } from "react-icons/io5";
 import Pagination from "@/app/utils/Pagenation/Pagenation";
+import { API_URL } from "@/app/services/useAxiosInstance";
 
 const ConsultVet = () => {
   const router = useRouter();
@@ -34,7 +35,7 @@ const ConsultVet = () => {
       if (endTime) queryParams.append("end", endTime);
 
       const response = await fetch(
-        `http://localhost:8080/api/public/veterinarian/getAll?${queryParams.toString()}`
+        `${API_URL}/api/public/veterinarian/getAll?${queryParams.toString()}`
       );
 
       if (!response.ok) {

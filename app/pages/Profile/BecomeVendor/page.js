@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
+import { API_URL } from "@/app/services/useAxiosInstance";
 
 function VendorPage() {
     const router = useRouter();
@@ -30,7 +31,7 @@ function VendorPage() {
 
     const fetchCountryData = async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/public/country/getAll');
+            const response = await fetch(`${API_URL}/api/public/country/getAll`);
             const data = await response.json();
             setCountryData(data);
             console.log('Country Data:', data);
@@ -41,7 +42,7 @@ function VendorPage() {
 
     const fetchStateData = async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/public/state/getAll');
+            const response = await fetch(`${API_URL}/api/public/state/getAll`);
             const data = await response.json();
             setStateData(data);
             console.log('State Data:', data);
@@ -105,7 +106,7 @@ function VendorPage() {
         };
 
         try {
-            const response = await fetch('http://localhost:8080/api/public/vendor/add', {
+            const response = await fetch(`${API_URL}/api/public/vendor/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

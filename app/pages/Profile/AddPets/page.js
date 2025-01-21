@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { CiSquareInfo } from 'react-icons/ci';
 import Pagination from '@/app/utils/Pagenation/Pagenation';
 import { startLoading, stopLoading } from '@/app/redux/slices/loadingSlice';
+import { API_URL } from '@/app/services/useAxiosInstance';
 
 function AddPet() {
   const dispatch = useDispatch();
@@ -34,7 +35,7 @@ function AddPet() {
         isAdmin: true,
       }).toString();
 
-      const response = await fetch(`http://localhost:8080/api/public/product/getAll?${params}`);
+      const response = await fetch(`${API_URL}/api/public/product/getAll?${params}`);
       if (!response.ok) {
         throw new Error(`Error fetching products: ${response.statusText}`);
       }

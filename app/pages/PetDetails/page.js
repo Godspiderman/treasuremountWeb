@@ -9,6 +9,7 @@ import { startLoading, stopLoading } from "@/app/redux/slices/loadingSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
+import { API_URL } from "@/app/services/useAxiosInstance";
 
 const PetDetails = () => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -47,7 +48,7 @@ const PetDetails = () => {
       try {
         console.log("Fetching data for productId:", productId);
         const response = await fetch(
-          `http://localhost:8080/api/public/resource/pet/details/getOne/${productId}`
+          `${API_URL}/api/public/resource/pet/details/getOne/${productId}`
         );
         const data = await response.json();
 
@@ -98,7 +99,7 @@ const PetDetails = () => {
       dispatch(startLoading());
       try {
         const response = await fetch(
-          `http://localhost:8080/api/public/resource/pet/getOne/${productId}`
+          `${API_URL}/api/public/resource/pet/getOne/${productId}`
         );
         const data = await response.json();
         console.log(data);
@@ -116,7 +117,7 @@ const PetDetails = () => {
       dispatch(startLoading());
       try {
         const response = await fetch(
-          `http://localhost:8080/api/public/resource/food/getOne/${productId}`
+          `${API_URL}/api/public/resource/food/getOne/${productId}`
         );
         const data = await response.json();
         setFoodDetails(data);
@@ -137,7 +138,7 @@ const PetDetails = () => {
       dispatch(startLoading());
       try {
         const response = await fetch(
-          `http://localhost:8080/api/public/resource/accessories/getOne/${productId}`
+          `${API_URL}/api/public/resource/accessories/getOne/${productId}`
         );
         const data = await response.json();
         setAccessoriesDetails(data);
@@ -158,7 +159,7 @@ const PetDetails = () => {
       dispatch(startLoading());
       try {
         const response = await fetch(
-          `http://localhost:8080/api/public/resource/medicine/getOne/${productId}`
+          `${API_URL}/api/public/resource/medicine/getOne/${productId}`
         );
         const data = await response.json();
         setMedicineDetails(data);
@@ -181,7 +182,7 @@ const PetDetails = () => {
       dispatch(startLoading());
       try {
         const response = await fetch(
-          `http://localhost:8080/api/public/productImages/getAll/${productId}?positionId=0`
+          `${API_URL}/api/public/productImages/getAll/${productId}?positionId=0`
         );
         const data = await response.json();
 
@@ -271,7 +272,7 @@ const PetDetails = () => {
     try {
       // Check if the product is already in the cart
       const checkResponse = await fetch(
-        `http://localhost:8080/cart/getOne?ProductId=${productId}&userId=${userId}`
+        `${API_URL}/cart/getOne?ProductId=${productId}&userId=${userId}`
       );
   
       if (!checkResponse.ok) {
@@ -292,7 +293,7 @@ const PetDetails = () => {
         }
   
         const increaseQuantityResponse = await fetch(
-          `http://localhost:8080/cart/addQuantity/${parsedData.id}?incrementBy=${newQuantity}`,
+          `${API_URL}/cart/addQuantity/${parsedData.id}?incrementBy=${newQuantity}`,
           {
             method: "PATCH",  // Assuming you use PATCH to update the quantity
           }
@@ -308,7 +309,7 @@ const PetDetails = () => {
         alert("Product quantity updated in cart!");
       } else {
         // If product is not in the cart, add it as a new item
-        const response = await fetch("http://localhost:8080/cart/add", {
+        const response = await fetch(`${API_URL}/cart/add`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -350,7 +351,7 @@ const PetDetails = () => {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/public/reviews/getAll");
+        const response = await fetch(`${API_URL}/api/public/reviews/getAll`);
         if (!response.ok) {
           throw new Error("Failed to fetch reviews");
         }

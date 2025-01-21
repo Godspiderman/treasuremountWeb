@@ -15,6 +15,7 @@ import "swiper/css/pagination";
 
 import { GrFormNext } from "react-icons/gr";
 import { GrFormPrevious } from "react-icons/gr";
+import { API_URL } from "@/app/services/useAxiosInstance";
 
 const Homepage = () => {
   const [activeTab, setActiveTab] = useState(1);
@@ -33,7 +34,7 @@ const Homepage = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       const response = await axios.get(
-        "http://localhost:8080/api/public/blog/getAll"
+        `${API_URL}/api/public/blog/getAll`
       );
       setBlogs(response.data);
     };
@@ -87,7 +88,7 @@ const Homepage = () => {
       };
       dispatch(startLoading());
       const response = await axios.get(
-        "http://localhost:8080/api/public/product/getAll",
+        `${API_URL}/api/public/product/getAll`,
         {
           params: queryParams,
         }
@@ -123,7 +124,7 @@ const Homepage = () => {
         await Promise.all(
           products.map(async (product) => {
             const response = await axios.get(
-              `http://localhost:8080/api/public/productImages/getAll/${product.id}?positionId=1`
+              `${API_URL}/api/public/productImages/getAll/${product.id}?positionId=1`
             );
   
             if (response.data && response.data.length > 0) {
@@ -157,7 +158,7 @@ const Homepage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/public/homePage1/getAll');
+        const response = await fetch(`${API_URL}/api/public/homePage1/getAll`);
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
@@ -239,36 +240,6 @@ const Homepage = () => {
         </div>
       </div>
 
-
-
-      {/* section-2 */}
-      {/* <div className="homepage-section">
-      <div className="homepage-card-wrapper">
-          <div className="homepage-card1">
-            <div className="homepage-card-text d-flex">
-              <p>New Product</p>
-              <h2>Food For Pets</h2>
-            </div>
-            <img src="/image/home-21.png" alt="" className="w-50" />
-          </div>
-          <div className="homepage-card-content">
-            <div className="homepage-card2">
-              <img src="/image/home-22.png" alt="" />
-              <div className="homepage-card-text">
-                <p>New Product</p>
-                <h2>Toys For Dogs</h2>
-              </div>
-            </div>
-            <div className="homepage-card3">
-              <div className="homepage-card-text">
-                <p>New Product</p>
-                <h2>Toys For Cats</h2>
-              </div>
-              <img src="/image/home-23.png" alt="" />
-            </div>
-          </div>
-        </div>
-      </div> */}
 
       {/* section-3 */}
       <div className="couresCards">

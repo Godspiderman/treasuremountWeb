@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { MdDeleteForever } from 'react-icons/md';
 import { useRouter, useSearchParams } from "next/navigation";
 import { startLoading, stopLoading } from "@/app/redux/slices/loadingSlice";
+import { API_URL } from "@/app/services/useAxiosInstance";
 
 function PetAdd() {
   const dispatch = useDispatch();
@@ -32,7 +33,7 @@ function PetAdd() {
     const fetchData = async () => {
       dispatch(startLoading());
       try {
-        const response = await fetch(`http://localhost:8080/api/public/resource/pet/getOne/${id}`);
+        const response = await fetch(`${API_URL}/api/public/resource/pet/getOne/${id}`);
         if (!response.ok) {
           throw new Error(`Failed to fetch pet data: ${response.status}`);
         }
@@ -54,7 +55,7 @@ function PetAdd() {
   useEffect(() => {
     const fetchPositions = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/public/position/getAll');
+        const response = await fetch(`${API_URL}/api/public/position/getAll`);
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -123,7 +124,7 @@ function PetAdd() {
 
   const fetchSubCategories = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/public/subCategory/getAllSubCategory/${1}`);
+      const response = await fetch(`${API_URL}/api/public/subCategory/getAllSubCategory/${1}`);
       const data = await response.json();
       setSubCategories(data);
       console.log('setSubCategories:', data);
@@ -183,7 +184,7 @@ function PetAdd() {
         console.log(positionId, productId, imageData.file);
 
         await axios.post(
-          `http://localhost:8080/api/public/productImages/upload?productId=${productId}&positionId=${positionId}`,
+          `${API_URL}/api/public/productImages/upload?productId=${productId}&positionId=${positionId}`,
           formData,
           {
             headers: {
@@ -203,7 +204,7 @@ function PetAdd() {
   const fetchImages = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/public/productImages/getAll?productId=${formData.productId}&positionId=0`
+        `${API_URL}/api/public/productImages/getAll?productId=${formData.productId}&positionId=0`
       );
 
       if (!response.ok) {
@@ -231,7 +232,7 @@ function PetAdd() {
 
   const handleDeleteImage = async (productId, positionId) => {
     try {
-      await axios.delete(`http://localhost:8080/api/public/productImages/delete/${productId}?positionId=${positionId}`);
+      await axios.delete(`${API_URL}/api/public/productImages/delete/${productId}?positionId=${positionId}`);
 
       fetchImages(productId);
 
@@ -396,8 +397,8 @@ function PetAdd() {
     try {
       const url =
         formData.id === 0
-          ? "http://localhost:8080/api/public/resource/pet/add"
-          : `http://localhost:8080/api/public/resource/pet/update/${id}`;
+          ? `${API_URL}/api/public/resource/pet/add`
+          : `${API_URL}/api/public/resource/pet/update/${id}`;
 
       const method = formData.id === 0 ? "POST" : "PUT";
 

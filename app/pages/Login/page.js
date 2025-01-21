@@ -9,6 +9,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import { startLoading, stopLoading } from '@/app/redux/slices/loadingSlice';
 import axios from 'axios';
+import { API_URL } from '@/app/services/useAxiosInstance';
 
 const Login = () => {
   const router = useRouter();
@@ -69,7 +70,7 @@ const Login = () => {
       console.log("dw");
       
       const response = await axios.post(
-        'http://localhost:8080/api/login-api/login',
+        `${API_URL}/api/login-api/login`,
         {
           mobileNumber: identifier, 
           password:password

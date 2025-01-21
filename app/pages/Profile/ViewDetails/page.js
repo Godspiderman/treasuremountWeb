@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { API_URL } from "@/app/services/useAxiosInstance";
 
 const ViewDetails = () => {
   const [orderDetails, setOrderDetails] = useState(null);
@@ -23,7 +24,7 @@ const ViewDetails = () => {
     // Fetch the API data
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/orders/getOne/${orderId}`);
+        const response = await fetch(`${API_URL}/api/orders/getOne/${orderId}`);
         
         if (!response.ok) {
           throw new Error("Failed to fetch order details");
@@ -48,7 +49,7 @@ const ViewDetails = () => {
 
     const fetchProductDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/public/product/getOne/${productId}`);
+        const response = await fetch(`${API_URL}/api/public/product/getOne/${productId}`);
         if (!response.ok) throw new Error("Failed to fetch product details.");
         const data = await response.json();
         console.log(data);
@@ -82,7 +83,7 @@ const ViewDetails = () => {
     setLoading((prevState) => ({ ...prevState, return: true }));
 
     try {
-        const response = await fetch("http://localhost:8080/api/public/return/add", {
+        const response = await fetch(`${API_URL}/api/public/return/add`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -108,7 +109,7 @@ const ViewDetails = () => {
 
 const fetchReturnDetails = async (returnId) => {
     try {
-        const response = await fetch(`http://localhost:8080/api/public/return/getOne/${returnId}`);
+        const response = await fetch(`${API_URL}/api/public/return/getOne/${returnId}`);
         if (!response.ok) {
             throw new Error("Failed to fetch return details.");
         }
@@ -141,7 +142,7 @@ const handleCancelOrder = async () => {
   setLoading((prevState) => ({ ...prevState, cancel: true }));
 
   try {
-      const response = await fetch("http://localhost:8080/api/public/cancel/add", {
+      const response = await fetch(`${API_URL}/api/public/cancel/add`, {
           method: "POST",
           headers: {
               "Content-Type": "application/json",
@@ -167,7 +168,7 @@ const handleCancelOrder = async () => {
 
 const fetchCancelDetails = async (cancelId) => {
   try {
-      const response = await fetch(`http://localhost:8080/api/public/cancel/getOne/${cancelId}`);
+      const response = await fetch(`${API_URL}/api/public/cancel/getOne/${cancelId}`);
       if (!response.ok) {
           throw new Error("Failed to fetch cancel details.");
       }

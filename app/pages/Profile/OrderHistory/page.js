@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
+import { API_URL } from '@/app/services/useAxiosInstance';
 
 function OrderHistoryPage() {
   const router = useRouter();
@@ -29,7 +30,7 @@ function OrderHistoryPage() {
   useEffect(() => {
     const fetchOrderStatuses = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/public/orderStatus/getAll');
+        const response = await fetch(`${API_URL}/api/public/orderStatus/getAll`);
         if (response.ok) {
           const data = await response.json();
           setOrderStatuses(data);
@@ -52,7 +53,7 @@ function OrderHistoryPage() {
       }
 
       try {
-        const url = `http://localhost:8080/api/orders/getAll/${userId}`;
+        const url = `${API_URL}/api/orders/getAll/${userId}`;
         const response = await fetch(url);
 
         if (response.ok) {
@@ -93,7 +94,7 @@ function OrderHistoryPage() {
       await Promise.all(
         orders.map(async (order) => {
           const response = await fetch(
-            `http://localhost:8080/api/public/productImages/getAll/${order.productId}?positionId=1`
+            `${API_URL}/api/public/productImages/getAll/${order.productId}?positionId=1`
           );
 
           if (response.ok) {

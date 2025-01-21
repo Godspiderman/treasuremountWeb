@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import Pagination from "@/app/utils/Pagenation/Pagenation";
 
 import { useSelector } from "react-redux";
+import { API_URL } from "@/app/services/useAxiosInstance";
 
 const Products = () => {
   const router = useRouter();
@@ -43,7 +44,7 @@ const Products = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/public/category/getAll");
+      const response = await axios.get(`${API_URL}/api/public/category/getAll`);
       setCategories(response.data);
     } catch (err) {
       setError("Failed to fetch categories.");
@@ -53,7 +54,7 @@ const Products = () => {
 
   const fetchSubCategories = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/public/subCategory/getAll");
+      const response = await axios.get(`${API_URL}/api/public/subCategory/getAll`);
       setSubCategories(response.data);
     } catch (error) {
       console.error("Error fetching subcategories:", error.message);
@@ -78,7 +79,7 @@ const Products = () => {
       console.log(queryParams.subCategoryId);
       dispatch(startLoading());
 
-      const response = await axios.get(`http://localhost:8080/api/public/product/getAll/temp?${queryParams.toString()}`);
+      const response = await axios.get(`${API_URL}/api/public/product/getAll/temp?${queryParams.toString()}`);
       
       const fetchedProducts = Array.isArray(response.data) ? response.data : [];
       setProductsData(fetchedProducts); 
@@ -256,7 +257,7 @@ const Products = () => {
   const fetchProductImages = async (productId) => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/public/productImages/getAll/${productId}`
+        `${API_URL}/api/public/productImages/getAll/${productId}`
       );
 
       if (response.data && response.data.length > 0) {

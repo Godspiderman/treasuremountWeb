@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from "react-redux";
 import Pagination from "@/app/utils/Pagenation/Pagenation";
+import { API_URL } from '@/app/services/useAxiosInstance';
 
 function BookedAppointment() {
   const [appointments, setAppointments] = useState([]);
@@ -21,7 +22,7 @@ function BookedAppointment() {
       }
 
       try {
-        const apiUrl = `http://localhost:8080/api/public/appointments/getAll/${userId}?isVeterinarianId=false&Status=${status}`;
+        const apiUrl = `${API_URL}/api/public/appointments/getAll/${userId}?isVeterinarianId=false&Status=${status}`;
         const response = await fetch(apiUrl);
         if (!response.ok) {
           throw new Error(`Error: ${response.statusText}`);

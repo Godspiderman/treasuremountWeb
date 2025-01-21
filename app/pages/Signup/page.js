@@ -77,7 +77,7 @@ const Signup = () => {
       setLoading(true);
       console.log(payload);
 
-      const response = await axiosInstance.post("/api/public/user/add", payload);
+      const response = await axiosInstance.post(`/api/public/user/add`, payload);
       setLoading(false);
 
       if (response.data) {

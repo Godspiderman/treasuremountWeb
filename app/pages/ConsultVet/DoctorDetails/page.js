@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useSelector } from "react-redux";
+import { API_URL } from "@/app/services/useAxiosInstance";
 
 const DoctorDetails = () => {
   const userId = useSelector((state) => state.auth.user?.userId || null);
@@ -30,14 +31,12 @@ const DoctorDetails = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const slotsPerPage = 10;
 
-  const backendUrl = "http://localhost:8080";
-
   useEffect(() => {
     if (!id) return;
 
     const fetchDoctorDetails = async () => {
       try {
-        const response = await fetch(`${backendUrl}/api/public/veterinarian/getOne/${id}`);
+        const response = await fetch(`${API_URL}/api/public/veterinarian/getOne/${id}`);
         const data = await response.json();
 
         if (response.ok && data) {
@@ -88,7 +87,7 @@ const DoctorDetails = () => {
   const fetchAvailableSlots = async (veterinarianId) => {
     try {
       const response = await fetch(
-        `${backendUrl}/api/public/schedule/available-slots/${veterinarianId}?date=${currentDate}`
+        `${API_URL}/api/public/schedule/available-slots/${veterinarianId}?date=${currentDate}`
       );
       const data = await response.json();
       console.log("Available Slots:", data);
@@ -111,7 +110,7 @@ const DoctorDetails = () => {
   const fetchBookedSlots = async (veterinarianId) => {
     try {
       const response = await fetch(
-        `${backendUrl}/api/public/schedule/booked-slots/${veterinarianId}`
+        `${API_URL}/api/public/schedule/booked-slots/${veterinarianId}`
       );
       const data = await response.json();
       console.log("Booked Slots:", data);
@@ -136,7 +135,7 @@ const DoctorDetails = () => {
     updatedAppointmentData.appointmentRequestedDate = formattedDate;
   
     try {
-      const response = await fetch("http://localhost:8080/api/public/appointments/add", {
+      const response = await fetch(`${API_URL}/api/public/appointments/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedAppointmentData),

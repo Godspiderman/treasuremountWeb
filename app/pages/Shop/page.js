@@ -9,6 +9,7 @@ import axios from "axios";
 import "./Shop.scss";
 import Pagination from "@/app/utils/Pagenation/Pagenation";
 import { useRouter } from "next/navigation";
+import { API_URL } from "@/app/services/useAxiosInstance";
 
 const Shoppage = () => {
   const router = useRouter();
@@ -47,7 +48,7 @@ const Shoppage = () => {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/public/category/getAll");
+      const res = await axios.get(`${API_URL}/api/public/category/getAll`);
       setCategories(res.data);
       if (res.data.length > 0) {
         setOpenCategory(res.data.map((category) => category.id));
@@ -59,7 +60,7 @@ const Shoppage = () => {
 
   const fetchSubCategories = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/public/subCategory/getAll");
+      const res = await axios.get(`${API_URL}/api/public/subCategory/getAll`);
       setSubCategories(res.data);
     } catch (error) {
       console.error("Error fetching subcategories:", error);
@@ -69,7 +70,7 @@ const Shoppage = () => {
   const fetchProducts = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:8080/api/public/product/getAll?userId=0&categoryId=0&subCategoryId=0&minPrice=0&maxPrice=0&ProductStatusId=0&isAdmin=false"
+        `${API_URL}/api/public/product/getAll?userId=0&categoryId=0&subCategoryId=0&minPrice=0&maxPrice=0&ProductStatusId=0&isAdmin=false`
       );
       const fetchedProducts = Array.isArray(res.data) ? res.data : [];
       setProducts(fetchedProducts);
@@ -87,7 +88,7 @@ const Shoppage = () => {
 
     try {
       const res = await axios.get(
-        `http://localhost:8080/api/public/product/getAll?userId=0&categoryId=${categoryId}&subCategoryId=${subCategoryId}&minPrice=${minPrice || 0}&maxPrice=${maxPrice || 0}&ProductStatusId=0&isAdmin=false`
+        `${API_URL}/api/public/product/getAll?userId=0&categoryId=${categoryId}&subCategoryId=${subCategoryId}&minPrice=${minPrice || 0}&maxPrice=${maxPrice || 0}&ProductStatusId=0&isAdmin=false`
       );
       setFilteredProducts(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
@@ -214,7 +215,7 @@ const Shoppage = () => {
       await Promise.all(
         products.map(async (product) => {
           const response = await axios.get(
-            `http://localhost:8080/api/public/productImages/getAll/${product.id}?positionId=1`
+            `${API_URL}/api/public/productImages/getAll/${product.id}?positionId=1`
           );
 
           // If the response contains image data, store it
