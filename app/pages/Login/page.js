@@ -62,7 +62,7 @@ const Login = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      return; // If validation fails, don't proceed
+      return;
     }
     console.log(identifier,password);
 
@@ -132,7 +132,7 @@ const Login = () => {
             </div>
             <form onSubmit={handleLogin} className='login-form-forms'>
               <div className='login-form1'>
-                <label > Email <span className='red-mark'>*</span></label>
+                <label > Email or Phone <span className='red-mark'>*</span></label>
                 <input
                   type="text"
                   value={identifier}

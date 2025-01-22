@@ -298,7 +298,7 @@ const Homepage = () => {
 
                         <p>{product.productName}</p>
                         <div className="tabPrice">
-                          <p>₹{product.price.toFixed(2)}</p>
+                          <p>₹ {product.price.toFixed(2)}</p>
                         </div>
                       </div>
                     ))
@@ -336,7 +336,7 @@ const Homepage = () => {
                         
                         <p>{product.productName}</p>
                         <div className="tabPrice">
-                          <p>₹{product.price.toFixed(2)}</p>
+                          <p>₹ {product.price.toFixed(2)}</p>
                         </div>
                       </div>
                     ))
@@ -377,7 +377,7 @@ const Homepage = () => {
 
                         <p>{product.productName}</p>
                         <div className="tabPrice">
-                          <p>₹{product.price.toFixed(2)}</p>
+                          <p>₹ {product.price.toFixed(2)}</p>
                         </div>
                       </div>
                     ))
@@ -434,7 +434,7 @@ const Homepage = () => {
           <img src="/image/home-41.jpg" alt="" />
           <div className="footContent">
             <p>30% off All Items</p>
-            <h2>Accessory</h2>
+            <h2>Birds</h2>
             <button><Link href="/pages/Shop" >SHOP NOW</Link></button>
           </div>
         </div>
@@ -442,7 +442,7 @@ const Homepage = () => {
           <img src="/image/home-42.png" alt="" />
           <div className="footContent">
             <p>30% off All Items</p>
-            <h2>Accessory</h2>
+            <h2>Dogs</h2>
             <button><Link href="/pages/Shop" >SHOP NOW</Link></button>
           </div>
         </div>
@@ -451,7 +451,7 @@ const Homepage = () => {
           <img src="/image/home-43.png" alt="" />
           <div className="footContent">
             <p>30% off All Items</p>
-            <h2>Accessory</h2>
+            <h2>Cats</h2>
             {/* <button>SHOP NOW</button> */}
             <button><Link href="/pages/Shop" >SHOP NOW</Link></button>
           </div>
@@ -499,11 +499,11 @@ const Homepage = () => {
                     </p>
                   </div> */}
                    <div className="tabPrice">
-                    <p>₹{product.price.toFixed(2)}</p>
+                    <p>₹ {product.price.toFixed(2)}</p>
                     </div>
-                  {/* <div className="locate">
-                    <p>{product.location || "Location not available"}</p>
-                  </div> */}
+                  <div className="locate">
+                    <p>Shop Name: {product.shopName || "Location not available"}</p>
+                  </div>
                 </div>
               ))}
           </div>

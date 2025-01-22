@@ -37,7 +37,7 @@ const Blogpage = () => {
             <div
               className="BlogContentCard"
               key={blog.id}
-              onClick={() => handleBlogClick(blog.id)} // Passing the blog's ID here
+              onClick={() => handleBlogClick(blog.id)}
             >
               <img
                 src="/image/home-72.png"

@@ -38,8 +38,8 @@ import Link from "next/link";
                 
                 <div className="footer-lists">
                     <Link href="/" className="footer-list-item"><MdKeyboardDoubleArrowRight /> Home</Link>
-                    <Link href="/pages/Pets" className="footer-list-item"><MdKeyboardDoubleArrowRight /> About</Link>
-                    {/* <Link href="/pages/Products" className="footer-list-item"><MdKeyboardDoubleArrowRight /> Products</Link> */}
+                    <Link href="/pages/Pets" className="footer-list-item"><MdKeyboardDoubleArrowRight /> Pets</Link>
+                    <Link href="/pages/Products" className="footer-list-item"><MdKeyboardDoubleArrowRight /> Products</Link>
                     <Link href="/pages/Shop" className="footer-list-item"><MdKeyboardDoubleArrowRight /> Shop</Link>
                     <Link href="/pages/Blog" className="footer-list-item"><MdKeyboardDoubleArrowRight /> Blog</Link>
                 </div>

@@ -44,12 +44,21 @@ const Signup = () => {
     } else if (!/^\d{10}$/.test(formData.mobileNumber)) {
       newErrors.mobileNumber = "Enter a valid 10-digit mobile number.";
     }
-    if (!formData.password.trim()) newErrors.password = "Password is required.";
+    
+    if (!formData.password.trim()) {
+      newErrors.password = "Password is required.";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters.";
+    } else if (!/[a-zA-Z]/.test(formData.password)) {
+      newErrors.password = "Password must contain at least one alphabetic character.";
+    }
+    
     if (!formData.confirmPassword.trim()) {
       newErrors.confirmPassword = "Confirm password is required.";
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match.";
     }
+    
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -59,27 +68,45 @@ const Signup = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: "" })); // Clear errors for the field
-  };
+    
+    // Clear previous error for the current field
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+
+    // Real-time validation for email and mobile number
+    if (name === "emailId") {
+        if (!value.trim()) {
+            setErrors((prev) => ({ ...prev, emailId: "Email is required." }));
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            setErrors((prev) => ({ ...prev, emailId: "Email ID must be alphanumeric and end with @gmail.com." }));
+        }
+    } else if (name === "mobileNumber") {
+        if (!value.trim()) {
+            setErrors((prev) => ({ ...prev, mobileNumber: "Mobile number is required." }));
+        } else if (!/^\d{10}$/.test(value)) {
+            setErrors((prev) => ({ ...prev, mobileNumber: "Enter a valid 10-digit mobile number." }));
+        }
+    }
+};
+
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
+  
     const payload = {
       ...formData,
       activeStatus: true,
       roleId: 3,
     };
-
+  
     try {
       setLoading(true);
       console.log(payload);
-
+  
       const response = await axiosInstance.post(`/api/public/user/add`, payload);
       setLoading(false);
-
+  
       if (response.data) {
         setSuccessMessage("Signup successful! You can now login.");
         setFormData({
@@ -91,20 +118,31 @@ const Signup = () => {
           password: "",
           confirmPassword: "",
         });
-
-        // After successful signup, automatically login the user
+  
         dispatch(loginSuccess(response.data));
-        router.push('/'); 
+        router.push('/');
       }
     } catch (error) {
       setLoading(false);
-      if (error.response?.data?.message) {
-        setErrors({ form: error.response.data.message });
+  
+      if (error.response) {
+        const statusCode = error.response.status;
+  
+        if (statusCode === 409) {
+          setErrors({
+            emailId: "The email address is already in use. Please use a different email.",
+          });
+        } else if (error.response.data?.message) {
+          setErrors({ form: error.response.data.message });
+        } else {
+          setErrors({ form: "An unexpected error occurred. Please try again." });
+        }
       } else {
-        setErrors({ form: "An unexpected error occurred. Please try again." });
+        setErrors({ form: "Unable to connect to the server. Please try again later." });
       }
     }
   };
+  
 
   return (
     <div className="signup">
@@ -160,7 +198,12 @@ const Signup = () => {
                     name="mobileNumber"
                     maxLength={10}
                     value={formData.mobileNumber}
-                    onChange={handleChange}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d*$/.test(value)) {
+                          handleChange(e);
+                      }
+                  }}
                     className={errors.mobileNumber ? "input-error" : ""}
                     />
                     {errors.mobileNumber && <p className="error-message">{errors.mobileNumber}</p>}

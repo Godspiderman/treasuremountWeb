@@ -24,13 +24,13 @@ const Shoppage = () => {
   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 9; 
+  const itemsPerPage = 9;
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
 
   const [searchName, setSearchName] = useState("");
-  
+
   const toggleFilter = (filterName) => {
     setOpenFilter(openFilter === filterName ? null : filterName);
   };
@@ -148,29 +148,29 @@ const Shoppage = () => {
 
   const handlePriceChange = (e, isMinPrice) => {
     const value = e.target.value;
-  
+
     if (value === "") {
       if (isMinPrice) setMinPrice("");
       else setMaxPrice("");
       return;
     }
-  
+
     const parsedValue = parseFloat(value);
-  
+
     if (isNaN(parsedValue) || parsedValue < 0) {
       alert("Price cannot be negative");
       return;
     }
-  
+
     if (isMinPrice) {
       setMinPrice(parsedValue);
-      
+
       if (maxPrice !== "" && parsedValue > parseFloat(maxPrice)) {
         alert('Min price cannot be greater than max price');
       }
     } else {
       setMaxPrice(parsedValue);
-      
+
       if (minPrice !== "" && parsedValue < parseFloat(minPrice)) {
         // alert('Max price cannot be less than min price');
       }
@@ -191,14 +191,16 @@ const Shoppage = () => {
   const handleSearchChange = (event) => {
     setSearchName(event.target.value);
   };
-  
+
   useEffect(() => {
     if (searchName === "") {
-      setFilteredProducts(products); 
+      setFilteredProducts(products);
     } else {
       const filtered = products.filter((product) =>
-        (product.productName?.toLowerCase() || "").includes(searchName.toLowerCase())
-      );
+        (product.productName?.toLowerCase() || "").includes(searchName.toLowerCase()) ||
+        (product.shopName?.toLowerCase() || "").includes(searchName.toLowerCase())
+    );
+    
       setFilteredProducts(filtered);
     }
   }, [searchName, products]);
@@ -210,7 +212,7 @@ const Shoppage = () => {
     }
 
     try {
-      const images = {}; 
+      const images = {};
 
       await Promise.all(
         products.map(async (product) => {
@@ -220,7 +222,7 @@ const Shoppage = () => {
 
           // If the response contains image data, store it
           if (response.data && response.data.length > 0) {
-            images[product.id] = response.data[0].imageUrl; 
+            images[product.id] = response.data[0].imageUrl;
           } else {
             console.log(`No image found for product ID: ${product.id}`);
           }
@@ -236,16 +238,14 @@ const Shoppage = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, []); // Only run this once on mount
-
-  // Fetch images only if products change and images aren't fetched yet
+  }, []);
   useEffect(() => {
     if (products.length > 0 && !imagesFetched.current) {
       fetchImagesForProducts(products);
     }
-  }, [products]); // Runs only when the products change
+  }, [products]);
 
-  
+
   return (
     <div className="shop-page">
       <div className="shoppage-Container">
@@ -265,7 +265,7 @@ const Shoppage = () => {
         </div>
 
         <div className="hero-Tabs-Container">
-        <div className="search-Input">
+          <div className="search-Input">
             <div className="search-Box">
               <FiSearch size={20} />
               <input
@@ -384,10 +384,10 @@ const Shoppage = () => {
           <div className="template-Cards">
             <div className="cards-Container">
               {paginatedProducts.map((product, intex) => (
-                <div 
-                onClick={() => router.push(`/pages/PetDetails?productId=${product.id}&categoryId=${product.categoryId}`)}
-                key={intex} 
-                className="card">
+                <div
+                  onClick={() => router.push(`/pages/PetDetails?productId=${product.id}&categoryId=${product.categoryId}`)}
+                  key={intex}
+                  className="card">
                   <div className="product-card-img">
                     <img
                       src={imageUrls[product.id] || "default-placeholder.jpg"}
@@ -398,6 +398,7 @@ const Shoppage = () => {
 
                   <div className="card-Details">
                     <p className="card-Title">{product.productName}</p>
+                    <p className="card-Title">Shop Name: {product.shopName || "Location not available"}</p>
                   </div>
                 </div>
               ))}
