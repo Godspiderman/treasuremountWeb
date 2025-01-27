@@ -11,7 +11,6 @@ import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { API_URL } from "@/app/services/useAxiosInstance";
 
-//import { setCartCount } from '@/app/redux/slices/cartSlice';
 import { incrementCartCount } from '@/app/redux/slices/cartSlice'; 
 
 const PetDetails = () => {
@@ -282,23 +281,21 @@ const PetDetails = () => {
         throw new Error(`Error: ${checkResponse.status} - ${checkResponse.statusText}`);
       }
   
-      // Check if response has content to parse as JSON
       const checkData = await checkResponse.text();
       const parsedData = checkData ? JSON.parse(checkData) : null;
   
       if (parsedData) {
-        // If product exists in the cart, increase the quantity by 'count'
         const newQuantity = parsedData.quantity + count;
   
         if (newQuantity > stockQuantity) {
           alert("Cannot add more than the available stock in the cart.");
-          return; // Prevent quantity increase beyond available stock
+          return; 
         }
   
         const increaseQuantityResponse = await fetch(
           `${API_URL}/cart/addQuantity/${parsedData.id}?incrementBy=${newQuantity}`,
           {
-            method: "PATCH",  // Assuming you use PATCH to update the quantity
+            method: "PATCH",  
           }
         );
   
@@ -306,16 +303,12 @@ const PetDetails = () => {
           throw new Error(`Error: ${increaseQuantityResponse.status} - ${increaseQuantityResponse.statusText}`);
         }
   
-        // Read the response as text (not JSON)
         const increaseData = await increaseQuantityResponse.text();
         console.log("Quantity increased:", increaseData);
         dispatch(incrementCartCount(count));
         alert("Product quantity updated in cart!");
      
-       
-
       } else {
-        // If product is not in the cart, add it as a new item
         const response = await fetch(`${API_URL}/cart/add`, {
           method: "POST",
           headers: {
@@ -328,16 +321,13 @@ const PetDetails = () => {
           throw new Error(`Error: ${response.status} - ${response.statusText}`);
         }
   
-        // Read the response as text (not JSON)
         const data = await response.text();
         console.log("Product added to cart:", data);
         dispatch(incrementCartCount(count));
-        alert("Product added to cart successfully!");
-
-        
+        alert("Product added to cart successfully!");    
 
       }
-  
+ 
       router.push(`/pages/Cart/?count=${count}`);
     } catch (error) {
       console.error("Error:", error);
@@ -346,7 +336,6 @@ const PetDetails = () => {
   };
   
   
-
   const handleOrder = (OneproductId, count) => {
     router.push(`/pages/Cart/PlaceOrder?productId=${OneproductId}&count=${count}`);
   }
@@ -356,6 +345,92 @@ const PetDetails = () => {
     router.push("/pages/Login");
   };
 
+  const [showForm, setShowForm] = useState(false);
+
+  const [reviewData, setReviewData] = useState({
+    id: 0,
+    userId: userId,
+    productId: productId,
+    rating: "",
+    comments: "",
+    isApproved: false,
+    createdDate: new Date().toISOString(),
+  });
+  
+  const [errors, setErrors] = useState({
+    rating: '',
+    comments: ''
+  });
+  
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setReviewData((prevData) => ({ ...prevData, [name]: value }));
+  
+    // Hide errors while typing if input is valid
+    if (name === 'rating' && (value >= 1 && value <= 5)) {
+      setErrors(prevErrors => ({ ...prevErrors, rating: '' }));
+    }
+  
+    if (name === 'comments' && value.length <= 500) {
+      setErrors(prevErrors => ({ ...prevErrors, comments: '' }));
+    }
+  };
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    const validationErrors = {};
+  
+    if (!reviewData.rating || reviewData.rating < 1 || reviewData.rating > 5) {
+      validationErrors.rating = 'Rating must be between 1 and 5.';
+    }
+  
+    if (!reviewData.comments) {
+      validationErrors.comments = 'Comments cannot be empty.';
+    } else if (reviewData.comments.length > 500) {
+      validationErrors.comments = 'Comments cannot exceed 500 characters.';
+    }
+  
+    if (Object.keys(validationErrors).length === 0) {
+      const payload = {
+        id: 0,
+        userId: reviewData.userId,
+        productId: reviewData.productId,
+        rating: Number(reviewData.rating),
+        comments: reviewData.comments.trim(),
+        isApproved: false,
+        createdDate: new Date().toISOString(),
+      };
+  
+      try {
+        const response = await fetch("http://localhost:8080/api/public/reviews/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+  
+        if (!response.ok) {
+          throw new Error("Failed to submit review");
+        }
+  
+        const data = await response.json();
+  
+        alert("Review submitted successfully!");
+        setReviewData({ ...reviewData, rating: "", comments: "" });
+        setShowForm(false);
+  
+      } catch (error) {
+        console.error("Error submitting review:", error);
+        alert(error.message || "An error occurred while submitting.");
+      }
+    } else {
+      setErrors(validationErrors);
+    }
+  };
+  
+  
 
   const [reviews, setReviews] = useState([]);
 
@@ -367,7 +442,7 @@ const PetDetails = () => {
           throw new Error("Failed to fetch reviews");
         }
         const data = await response.json();
-        // Map API model to component format
+
         const mappedReviews = data.map((review) => ({
           id: review.id,
           userName: `User ${review.userId}`,
@@ -652,9 +727,6 @@ const PetDetails = () => {
                     <span>20 Reviews</span>
                   </div>
                 </div>
-                {/* <div className="detailsHead2">
-                  <CiShare2 />
-                </div> */}
               </div>
 
               <div className="detailsSectionContent">
@@ -725,9 +797,6 @@ const PetDetails = () => {
                     <span>20 Reviews</span>
                   </div>
                 </div>
-                <div className="detailsHead2">
-                  <CiShare2 />
-                </div>
               </div>
 
               <div className="detailsSectionContent">
@@ -794,9 +863,6 @@ const PetDetails = () => {
                     <span>20 Reviews</span>
                   </div>
                 </div>
-                <div className="detailsHead2">
-                  <CiShare2 />
-                </div>
               </div>
 
               <div className="detailsSectionContent">
@@ -857,9 +923,6 @@ const PetDetails = () => {
                     ))}
                     <span>20 Reviews</span>
                   </div>
-                </div>
-                <div className="detailsHead2">
-                  <CiShare2 />
                 </div>
               </div>
 
@@ -1024,6 +1087,8 @@ const PetDetails = () => {
         </div>
 
         <div className="reviewContainer">
+          
+
           <h3>Reviews</h3>
           {reviews.length > 0 ? (
             reviews.map((review, index) => (
@@ -1053,10 +1118,70 @@ const PetDetails = () => {
                   <p>{review.content}</p>
                 </div>
               </div>
+
+
+            
+              
             ))
           ) : (
             <p>No reviews available.</p>
           )}
+
+
+          <div className="add-review-container">
+            {!showForm && (
+              <button className="open-review-button" onClick={() => setShowForm(true)}>
+                Add Review
+              </button>
+            )}
+            {showForm && (
+              <div className="reviewpage-contents">
+                <div className="reviewpage-head">
+                  <h2>Add Review</h2>
+                  <button className="close-review-button" onClick={() => {
+                    setShowForm(false); 
+                    setErrors({ rating: '', comments: '' }); 
+                  }}>
+                    Close
+                  </button>
+
+                </div>
+                <div className="reviewpage-content">
+                  <form onSubmit={handleSubmit} className="reviewpage-form">
+                    <div className="reviewpage-form-inputs">
+                      <div className="form1">
+                        <label>Rating </label>
+                        <input
+                          type="text"
+                          name="rating"
+                          value={reviewData.rating}
+                          onChange={handleChange}
+                        />
+                        {errors.rating && <p className="error-message">{errors.rating}</p>}
+                      </div>
+
+                      <div className="form2">
+                        <label>Comments</label>
+                        <textarea
+                          name="comments"
+                          value={reviewData.comments}
+                          onChange={handleChange}
+                        />
+                        {errors.comments && <p className="error-message">{errors.comments}</p>}
+                      </div>
+                    </div>
+
+                    <button type="submit" className="reviewpage-submit-button">
+                      Submit Review
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+
+
+
         </div>
 
 

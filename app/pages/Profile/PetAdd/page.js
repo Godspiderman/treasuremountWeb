@@ -433,8 +433,6 @@ function PetAdd() {
   };
 
 
-
-
   return (
     <div className="Pet-add">
       <div className="Pet-add-container">

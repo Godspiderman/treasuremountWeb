@@ -30,8 +30,7 @@ const Products = () => {
   const [productsData, setProductsData] = useState([]);
   const [error, setError] = useState(null);
   const [searchName, setSearchName] = useState("");
-
-  // const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -40,7 +39,96 @@ const Products = () => {
   useEffect(() => {
     fetchProducts({ search: searchQuery });
   }, [searchQuery]);
+
+
+  //add cart -show
+
+  const [petDetails, setPetDetails] = useState("");
+  const [foodDetails, setFoodDetails] = useState("");
+  const [accessoriesDetails, setAccessoriesDetails] = useState("");
+  const[medicineDetails,setMedicineDetails]=useState("");
+
+  useEffect(() => {
+    const fetchPetsDetails = async () => {
+      dispatch(startLoading());
+      try {
+        const response = await fetch(
+          `${API_URL}/api/public/resource/pet/getOne/${productId}`
+        );
+        const data = await response.json();
+        console.log(data);
+        setPetDetails(data);
+        dispatch(stopLoading());
+      } catch (error) {
+      }
+    };
+
+    fetchPetsDetails();
+  }, [categoryId, productId]);
+
+  useEffect(() => {
+    const fetchFoodDetails = async () => {
+      dispatch(startLoading());
+      try {
+        const response = await fetch(
+          `${API_URL}/api/public/resource/food/getOne/${productId}`
+        );
+        const data = await response.json();
+        setFoodDetails(data);
+        setStockQuantity(data.stockQuantity); 
+        console.log("Stock Quantity:", data.stockQuantity);
+        console.log(data);
+        dispatch(stopLoading());
+      } catch (error) {
+      }
+    };
+
+    fetchFoodDetails();
+  }, [categoryId, productId]);
+
+
+  useEffect(() => {
+    const fetchAccessoriesDetails = async () => {
+      dispatch(startLoading());
+      try {
+        const response = await fetch(
+          `${API_URL}/api/public/resource/accessories/getOne/${productId}`
+        );
+        const data = await response.json();
+        setAccessoriesDetails(data);
+        setStockQuantity(data.stockQuantity); 
+        console.log("Stock Quantity:", data.stockQuantity);
+        dispatch(stopLoading());
+        console.log(data);
+      } catch (error) {
+      }
+    };
+
+    fetchAccessoriesDetails();
+  }, [categoryId, productId]);
+
+
+  useEffect(() => {
+    const fetchMedicineDetails = async () => {
+      dispatch(startLoading());
+      try {
+        const response = await fetch(
+          `${API_URL}/api/public/resource/medicine/getOne/${productId}`
+        );
+        const data = await response.json();
+        setMedicineDetails(data);
+        setStockQuantity(data.stockQuantity);
+        console.log("Stock Quantity:", data.stockQuantity);
+        console.log(data);
+        dispatch(stopLoading());
+      } catch (error) {
+        // Handle error
+      }
+    };
   
+    fetchMedicineDetails();
+  }, [categoryId, productId]);
+
 
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 8;
@@ -64,7 +152,6 @@ const Products = () => {
     }
   };
 
- 
 
   const fetchProducts = async (filters = {}) => {
     try {
@@ -238,6 +325,7 @@ const Products = () => {
   const [hoverImages, setHoverImages] = useState({});
   const [fetchedProductIds, setFetchedProductIds] = useState(new Set());
 
+
   useEffect(() => {
     const fetchImagesForProducts = async () => {
       const newProductIds = productsData
@@ -277,6 +365,84 @@ const Products = () => {
     }
   };
 
+  const handleAddToCart = async () => {
+    if (count > stockQuantity) {
+      alert("You cannot add more than the available stock.");
+      return; 
+    }
+  
+    const formData = {
+      userId: userId,
+      productId: productId,
+      initialQuantity: count,
+    };
+  
+    console.log("Parameters being sent:", formData);
+  
+    try {
+      // Check if the product is already in the cart
+      const checkResponse = await fetch(
+        `${API_URL}/cart/getOne?ProductId=${productId}&userId=${userId}`
+      );
+  
+      if (!checkResponse.ok) {
+        throw new Error(`Error: ${checkResponse.status} - ${checkResponse.statusText}`);
+      }
+  
+      const checkData = await checkResponse.text();
+      const parsedData = checkData ? JSON.parse(checkData) : null;
+  
+      if (parsedData) {
+        const newQuantity = parsedData.quantity + count;
+  
+        if (newQuantity > stockQuantity) {
+          alert("Cannot add more than the available stock in the cart.");
+          return; 
+        }
+  
+        const increaseQuantityResponse = await fetch(
+          `${API_URL}/cart/addQuantity/${parsedData.id}?incrementBy=${newQuantity}`,
+          {
+            method: "PATCH",  
+          }
+        );
+  
+        if (!increaseQuantityResponse.ok) {
+          throw new Error(`Error: ${increaseQuantityResponse.status} - ${increaseQuantityResponse.statusText}`);
+        }
+  
+        const increaseData = await increaseQuantityResponse.text();
+        console.log("Quantity increased:", increaseData);
+        dispatch(incrementCartCount(count));
+        alert("Product quantity updated in cart!");
+     
+      } else {
+        const response = await fetch(`${API_URL}/cart/add`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        }
+  
+        const data = await response.text();
+        console.log("Product added to cart:", data);
+        dispatch(incrementCartCount(count));
+        alert("Product added to cart successfully!");    
+      }
+  
+      // Redirect to cart page with the item count
+      router.push(`/pages/Cart/?count=${count}`);
+    } catch (error) {
+      console.error("Error:", error);
+      alert(`Error: ${error.message}`);
+    }
+  };
+  
 
   return (
     <div className="products-page">
@@ -437,6 +603,27 @@ const Products = () => {
                     <div className="product-card-price">
                       <p className="offer-price">₹{(product.price - (product.price * product.discount / 100)).toFixed(2)} </p>
                       <p className="price">₹{product.price.toFixed(2)} </p>
+                    </div>
+
+                    <div className="add-btn">
+                      {(product.categoryId === 2 || product.categoryId === 3 || product.categoryId === 4) && (
+                        <button
+                          className="addWishList"
+                          onClick={(e) => {
+                            if (isAuthenticated) {
+                              console.log("Adding to cart...");
+                              handleAddToCart();  // Call your new handle function to add to cart
+                            } else {
+                              console.log("Redirecting to login...");
+                              e.preventDefault();
+                              router.push("/pages/Login");
+                            }
+                          }}
+                          disabled={loading}
+                        >
+                          {loading ? "Adding..." : "Add to Cart"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

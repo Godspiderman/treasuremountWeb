@@ -6,21 +6,31 @@ import { useRouter } from "next/navigation";
 import { FaPlus, FaMinus } from "react-icons/fa";
 import { API_URL } from "@/app/services/useAxiosInstance";
 
+import { useDispatch } from 'react-redux';
+import {setCartCount} from '@/app/redux/slices/cartSlice'; 
+
 const Card = () => {
   const [orders, setOrders] = useState([]);
   const [errorMessages, setErrorMessages] = useState({});
   const userId = useSelector((state) => state.auth?.user?.userId);
 
+  const [loading, setLoading] = useState(true);
+
+  const dispatch = useDispatch();
   console.log("userId",userId);
   const router = useRouter();
 
   useEffect(() => {
     if (userId) {
       fetchOrders();
+    } else {
+      dispatch(setCartCount(0)); 
     }
-  }, [userId]);
+  }, [userId, dispatch]);
+  
 
   const fetchOrders = async () => {
+    setLoading(true);
     try {
       const response = await fetch(
         `${API_URL}/cart/getAll?userId=${userId}`
@@ -33,6 +43,9 @@ const Card = () => {
       }
     } catch (error) {
       console.error("Error fetching orders:", error);
+    }
+    finally {
+      setLoading(false); 
     }
   };
 
@@ -47,6 +60,7 @@ const Card = () => {
           prevOrders.filter((order) => order.id !== cartId)
         );
         alert("Item removed successfully.");
+        dispatch(setCartCount(orders.length - 1));
       } else {
         console.error("Failed to remove item:", response.status);
         alert("Failed to remove item. Please try again.");
@@ -179,12 +193,14 @@ const fetchImagesForOrders = async (orders) => {
   }
 };
 
-
   return (
     <div className="cartpage">
       <div className="cartpage-container">
         <h2 className="cartpage-head">Your Cart</h2>
-        {orders.length > 0 ? (
+        {loading ? ( 
+          <p>Loading cart items...</p>
+        ) : orders.length > 0 ? (
+          
           <>
             <div className="cartpage-list">
               {orders.map((order) => (
@@ -200,8 +216,6 @@ const fetchImagesForOrders = async (orders) => {
                         <p>Image not available</p>
                       )}
                     </div>
-
-
 
                   <div className="cartpage-info">
                     <h3 className="cartpage-title">{order.categoryName}</h3>
@@ -238,7 +252,9 @@ const fetchImagesForOrders = async (orders) => {
                 Place Order
               </button>
             </div>
+        
           </>
+        
         ) : (
           <p>No items in your cart.</p>
         )}

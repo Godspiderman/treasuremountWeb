@@ -8,6 +8,8 @@ import { startLoading, stopLoading } from "@/app/redux/slices/loadingSlice";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/app/services/useAxiosInstance";
 
+import {clearCartItems} from '@/app/redux/slices/cartSlice'; 
+
 const PlaceOrder = () => {
   const dispatch = useDispatch();
   //form data
@@ -35,6 +37,7 @@ const PlaceOrder = () => {
 
   const [imageUrls, setImageUrls] = useState({});
   const imagesFetched = useRef(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const currentDate = new Date();
@@ -64,7 +67,6 @@ const PlaceOrder = () => {
     fetchCountries();
   }, []);
 
-  // Fetch states based on selected country
   useEffect(() => {
     if (formData.countryId) {
       const fetchStates = async () => {
@@ -91,7 +93,7 @@ const PlaceOrder = () => {
     const { name, value } = e.target;
 
     if (name === "phoneNumber" && !/^\d*$/.test(value)) {
-      return; // Ignore non-numeric input
+      return; 
     }
 
     setFormData({ ...formData, [name]: value });
@@ -198,8 +200,8 @@ const PlaceOrder = () => {
       );
       if (response.data.length === 1) {
         setAddresses(response.data);
-        setSelectedAddressId(response.data[0].id); // Set the first address as default
-        setSelectedAddress(response.data[0]);// Automatically set the id
+        setSelectedAddressId(response.data[0].id); 
+        setSelectedAddress(response.data[0]);
       }
       setAddresses(response.data);
 
@@ -238,7 +240,8 @@ const PlaceOrder = () => {
   // Fetch Cart Items
   useEffect(() => {
     const fetchCartData = async () => {
-      dispatch(stopLoading());
+      //dispatch(stopLoading());
+      setLoading(true);
       try {
         const response = await axios.get(`${API_URL}/cart/getAll?userId=${userId}`);
         setCartItems(response.data);
@@ -246,7 +249,7 @@ const PlaceOrder = () => {
       } catch (err) {
         console.error("Failed to fetch cart items", err);
       } finally {
-        dispatch(stopLoading());
+        setLoading(false); 
       }
     };
     fetchCartData();
@@ -327,7 +330,6 @@ const PlaceOrder = () => {
       console.log("Order placed successfully:", orderResponse.data);
       alert("Order placed successfully!");
 
-      // Clear all items from the cart
       try {
         if (cartItems.length === 0) {
           console.log("No items in the cart to clear.");
@@ -352,7 +354,10 @@ const PlaceOrder = () => {
 
         console.log("All cart items cleared successfully!");
         alert("Cart cleared successfully!");
+
         setCartItems([]);
+        dispatch(clearCartItems());
+
         router.push("/pages/Products")
       } catch (cartError) {
         console.error("Failed to clear cart:", cartError);
@@ -406,7 +411,10 @@ const PlaceOrder = () => {
         <div className="placeOrderHead">
           <h2>Place Order</h2>
         </div>
-        {!isFormVisible && (
+        {loading ? ( 
+          <p>Loading cart items...</p>
+        ) : !isFormVisible &&  (
+        // {!isFormVisible && (
           <>
             <div className="placeOrderContentMain">
               <div className="placeOrderContentHead">
@@ -596,50 +604,52 @@ const PlaceOrder = () => {
         <div className="orderContainerHead">
           <h2>Place Your Order</h2>
           <div className="orderContainerContent">
-            {cartItems.length > 0 ? (
-              <table className="place-cart-items">
-                <thead>
-                  <tr>
-                    <th>Product Image</th>
-                    <th>Product Name</th>
-                    <th>Price</th>
-                    <th>Tax</th>
-                    <th>Quantity</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {updatedItems.map((item, index) => (
-                    <tr key={index}>
-                      <td className="place-image-column">
-                        {imageUrls[item.productId] ? (
-                          <img src={imageUrls[item.productId]} alt={item.productName} />
-                        ) : (
-                          <p>Image not available</p>
-                        )}
-                      </td>
-                      <td className="place-details-column">
-                        {item.productName}
-                      </td>
-                      <td className="place-price-column">
-                        {item.unitPrice.toFixed(2)}
-                      </td>
-                      <td>
-                        {item.tax.toFixed(2)}
-                      </td>
-                      <td>
-                        {item.quantity}
+            {loading ? (
+              <p>Loading cart items...</p>
+              ) : cartItems.length === 0 ? (
+                <p>No items in cart</p>
+              ) : (
+                <table className="place-cart-items">
+                  <thead>
+                    <tr>
+                      <th>Product Image</th>
+                      <th>Product Name</th>
+                      <th>Price</th>
+                      <th>Tax</th>
+                      <th>Quantity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {updatedItems.map((item, index) => (
+                      <tr key={index}>
+                        <td className="place-image-column">
+                          {imageUrls[item.productId] ? (
+                            <img src={imageUrls[item.productId]} alt={item.productName} />
+                          ) : (
+                            <p>Image not available</p>
+                          )}
+                        </td>
+                        <td className="place-details-column">
+                          {item.productName}
+                        </td>
+                        <td className="place-price-column">
+                          {item.unitPrice.toFixed(2)}
+                        </td>
+                        <td>
+                          {item.tax.toFixed(2)}
+                        </td>
+                        <td>
+                          {item.quantity}
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="place-card-bottom">
+                      <td colSpan="4">
+                        Total: ₹ {totalAmount.toFixed(2)}
                       </td>
                     </tr>
-                  ))}
-                  <tr className="place-card-bottom">
-                    <td colSpan="4">
-                      Total: ₹ {totalAmount.toFixed(2)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            ) : (
-              <p>No items in the cart.</p>
+                  </tbody>
+                </table>
             )}
           </div>
           <div className="place-order-btn">
