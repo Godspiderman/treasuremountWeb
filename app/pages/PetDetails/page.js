@@ -11,6 +11,9 @@ import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { API_URL } from "@/app/services/useAxiosInstance";
 
+//import { setCartCount } from '@/app/redux/slices/cartSlice';
+import { incrementCartCount } from '@/app/redux/slices/cartSlice'; 
+
 const PetDetails = () => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   console.log("Redux auth state:", isAuthenticated);
@@ -306,7 +309,11 @@ const PetDetails = () => {
         // Read the response as text (not JSON)
         const increaseData = await increaseQuantityResponse.text();
         console.log("Quantity increased:", increaseData);
+        dispatch(incrementCartCount(count));
         alert("Product quantity updated in cart!");
+     
+       
+
       } else {
         // If product is not in the cart, add it as a new item
         const response = await fetch(`${API_URL}/cart/add`, {
@@ -324,7 +331,11 @@ const PetDetails = () => {
         // Read the response as text (not JSON)
         const data = await response.text();
         console.log("Product added to cart:", data);
+        dispatch(incrementCartCount(count));
         alert("Product added to cart successfully!");
+
+        
+
       }
   
       router.push(`/pages/Cart/?count=${count}`);
@@ -641,9 +652,9 @@ const PetDetails = () => {
                     <span>20 Reviews</span>
                   </div>
                 </div>
-                <div className="detailsHead2">
+                {/* <div className="detailsHead2">
                   <CiShare2 />
-                </div>
+                </div> */}
               </div>
 
               <div className="detailsSectionContent">

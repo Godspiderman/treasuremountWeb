@@ -10,13 +10,16 @@ import { FiSearch } from "react-icons/fi";
 import { LuListFilter } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import Pagination from "@/app/utils/Pagenation/Pagenation";
-
+import { useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import { API_URL } from "@/app/services/useAxiosInstance";
 
 const Products = () => {
   const router = useRouter();
-
+  const searchParams = useSearchParams();
+  const productId = searchParams.get("productId"); 
+  const categoryId = searchParams.get("categoryId");
+  const userId = searchParams.get("userId");
   const [showFilter, setShowFilter] = useState(false);
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
@@ -65,16 +68,16 @@ const Products = () => {
 
   const fetchProducts = async (filters = {}) => {
     try {
-
+      const userIdFromParams = searchParams.get("userId") || 0;
       const queryParams = new URLSearchParams({
         search: filters.search || "",
-        userId: filters.userId || 0,
+        userId: filters.userId || userIdFromParams,
         categoryId: filters.categoryId || [],
         subCategoryId: filters.subCategoryId || [],
         minPrice: filters.minPrice || 0,
         maxPrice: filters.maxPrice || 0,
         ProductStatusId: filters.ProductStatusId || [],
-        isAdmin: filters.isAdmin || false,
+        isAdmin:false,
       });
       console.log(queryParams.subCategoryId);
       dispatch(startLoading());

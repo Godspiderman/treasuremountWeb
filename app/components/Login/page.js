@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { loginSuccess ,loginFailure } from '../../redux/slices/authSlice';
@@ -9,12 +8,11 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import { startLoading, stopLoading } from '@/app/redux/slices/loadingSlice';
 import axios from 'axios';
-import { API_URL } from '@/app/services/useAxiosInstance';
 
 const Login = () => {
   const router = useRouter();
 
-  const [identifier, setIdentifier] = useState("");
+  const [identifier, setIdentifier] = useState(""); // Can be email or phone number
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
@@ -29,7 +27,7 @@ const Login = () => {
   };
 
   const validatePhoneNumber = (phoneNumber) => {
-    const phonePattern = /^\d{10}$/;
+    const phonePattern = /^\d{10}$/; // Only 10 digits
     return phonePattern.test(phoneNumber);
   };
 
@@ -42,7 +40,9 @@ const Login = () => {
       setIdentifierError("Email or phone number is required.");
       isValid = false;
     } else if (validateEmail(identifier)) {
+      // Valid email, no action needed
     } else if (validatePhoneNumber(identifier)) {
+      // Valid phone number, no action needed
     } else {
       setIdentifierError("Please enter a valid email or 10-digit phone number.");
       isValid = false;
@@ -60,7 +60,7 @@ const Login = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      return;
+      return; // If validation fails, don't proceed
     }
     console.log(identifier,password);
 
@@ -68,7 +68,7 @@ const Login = () => {
       console.log("dw");
       
       const response = await axios.post(
-        `${API_URL}/api/login-api/login`,
+        'http://localhost:8080/api/login-api/login',
         {
           mobileNumber: identifier, 
           password:password
@@ -88,7 +88,7 @@ const Login = () => {
     } catch (error) {
       dispatch(loginFailure());
       handleLoginError(error.response ? error.response.data : {});
-      //console.error("Error during login:", error);
+      console.error("Error during login:", error);
     }
   };
 
@@ -125,12 +125,12 @@ const Login = () => {
           <div className='login-form-content'>
             <div className='login-form-head'>
            
-            <h2> Welcome Back ! Treasuremount</h2>
-           
+            <h2> Welcome Back !</h2>
+            <h2>Treasuremount</h2>
             </div>
             <form onSubmit={handleLogin} className='login-form-forms'>
               <div className='login-form1'>
-                <label > Email or Phone <span className='red-mark'>*</span></label>
+                <label > Email <span className='red-mark'>*</span></label>
                 <input
                   type="text"
                   value={identifier}
@@ -146,15 +146,15 @@ const Login = () => {
               <div className='login-form1'>
                 <label htmlFor='password'> Password <span className='red-mark'>*</span></label>
                 <div className="password-container">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                className={passwordError ? "input-error" : ""}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setPasswordError(""); // Clear the error when typing starts
-                }}
-              />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  className={passwordError ? "input-error" : ""}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setPasswordError(""); // Clear the error when typing starts
+                  }}
+                />
               <span onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <FaEye /> : <FaEyeSlash />}
               </span>

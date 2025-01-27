@@ -384,7 +384,7 @@
       .cards-Container {
         display: flex;
         flex-wrap: wrap;
-        gap: 39px;
+        gap: 1rem;
         // justify-content: space-between; 
     
         .card {
@@ -473,10 +473,10 @@
       }
     
       @media (min-width: 1024px) {
-          width: 75%;
+          // width: 75%;
           .cards-Container {
             .card {
-              width: 30%; 
+              width: calc(33.33% - 20px);
             }
           }
       }

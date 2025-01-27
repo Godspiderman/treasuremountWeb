@@ -18,7 +18,6 @@ import { IoMdSearch } from "react-icons/io";
 import { RiCloseFill } from "react-icons/ri";
 // import Pagination from "./Pagination"; 
 
-
 import { setSearchQuery } from "@/app/redux/slices/searchSlice";
 import { API_URL } from "@/app/services/useAxiosInstance";
 
@@ -37,6 +36,8 @@ const Navbar = () => {
   const [pageCount, setPageCount] = useState(1);
   const menuRef = useRef(null); 
   const pathname = usePathname(); 
+
+  const cartCount = useSelector((state) => state.cart.count);
 
   // Fetch Products function
   const fetchProducts = async () => {
@@ -112,9 +113,9 @@ const Navbar = () => {
     } else {
       setSearchTerm(""); 
       setFilteredProducts([]); 
+      dispatch(setSearchQuery(""));
     }
   };
-  
   
   const [imageUrls, setImageUrls] = useState({});
   const imagesFetched = useRef(false);
@@ -224,7 +225,11 @@ const Navbar = () => {
              {isAuthenticated ? (
               <div className="rightMenu">
               {/* Cart and Profile links */}
-              <Link href="/pages/Cart"><CiShoppingCart /></Link>
+              {/* <Link href="/pages/Cart"><CiShoppingCart /></Link> */}
+              <Link href="/pages/Cart">
+                <CiShoppingCart />
+                {cartCount > 0 && <span className="cartCount">{cartCount}</span>}
+              </Link>
               <Link href="/pages/Profile">
                 <span className="helloText"><img src="/image/profile.png" alt="Profile" /></span>
               </Link>

@@ -131,6 +131,8 @@ function VendorPage() {
                 stateId: ''
             });
 
+            alert("Vendor registered successfully!");
+
             // Redirect to profile page on successful submission
             router.push("/pages/Profile");
 
@@ -282,7 +284,7 @@ function VendorPage() {
                                                 Cancel
                                             </button>
                                             <button type="submit" className="update-btn">
-                                                Apply
+                                                Submit
                                             </button>
                                         </div>
                                     </div>

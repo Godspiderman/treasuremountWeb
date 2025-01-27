@@ -28,7 +28,6 @@ const Shoppage = () => {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
-
   const [searchName, setSearchName] = useState("");
 
   const toggleFilter = (filterName) => {
@@ -37,7 +36,9 @@ const Shoppage = () => {
 
   const toggleCategory = (categoryId) => {
     setOpenCategory((prev) =>
-      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]
+      prev.includes(categoryId)
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId]
     );
   };
 
@@ -83,12 +84,16 @@ const Shoppage = () => {
   };
 
   const handleFilter = async () => {
-    const categoryId = selectedCategories.length > 0 ? selectedCategories.join(",") : "0";
-    const subCategoryId = selectedSubCategories.length > 0 ? selectedSubCategories.join(",") : "0";
+    const categoryId =
+      selectedCategories.length > 0 ? selectedCategories.join(",") : "0";
+    const subCategoryId =
+      selectedSubCategories.length > 0 ? selectedSubCategories.join(",") : "0";
 
     try {
       const res = await axios.get(
-        `${API_URL}/api/public/product/getAll?userId=0&categoryId=${categoryId}&subCategoryId=${subCategoryId}&minPrice=${minPrice || 0}&maxPrice=${maxPrice || 0}&ProductStatusId=0&isAdmin=false`
+        `${API_URL}/api/public/product/getAll?userId=0&categoryId=${categoryId}&subCategoryId=${subCategoryId}&minPrice=${
+          minPrice || 0
+        }&maxPrice=${maxPrice || 0}&ProductStatusId=0&isAdmin=false`
       );
       setFilteredProducts(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
@@ -133,7 +138,11 @@ const Shoppage = () => {
     setSelectedSubCategories([]);
   };
 
-  const toggleSubCategorySelection = (subCategoryId, categoryName, subCategoryName) => {
+  const toggleSubCategorySelection = (
+    subCategoryId,
+    categoryName,
+    subCategoryName
+  ) => {
     setSelectedSubCategories((prevState) => {
       if (prevState.includes(subCategoryId)) {
         removeFilter(`${categoryName}: ${subCategoryName}`);
@@ -144,7 +153,6 @@ const Shoppage = () => {
       }
     });
   };
-
 
   const handlePriceChange = (e, isMinPrice) => {
     const value = e.target.value;
@@ -166,7 +174,7 @@ const Shoppage = () => {
       setMinPrice(parsedValue);
 
       if (maxPrice !== "" && parsedValue > parseFloat(maxPrice)) {
-        alert('Min price cannot be greater than max price');
+        alert("Min price cannot be greater than max price");
       }
     } else {
       setMaxPrice(parsedValue);
@@ -177,7 +185,11 @@ const Shoppage = () => {
     }
   };
 
-  const hasSelectedFilters = selectedCategories.length > 0 || selectedSubCategories.length > 0 || minPrice || maxPrice;
+  const hasSelectedFilters =
+    selectedCategories.length > 0 ||
+    selectedSubCategories.length > 0 ||
+    minPrice ||
+    maxPrice;
 
   const pageCount = Math.ceil(filteredProducts.length / itemsPerPage);
   const paginatedProducts = filteredProducts.slice(
@@ -196,15 +208,19 @@ const Shoppage = () => {
     if (searchName === "") {
       setFilteredProducts(products);
     } else {
-      const filtered = products.filter((product) =>
-        (product.productName?.toLowerCase() || "").includes(searchName.toLowerCase()) ||
-        (product.shopName?.toLowerCase() || "").includes(searchName.toLowerCase())
-    );
-    
+      const filtered = products.filter(
+        (product) =>
+          (product.productName?.toLowerCase() || "").includes(
+            searchName.toLowerCase()
+          ) ||
+          (product.shopName?.toLowerCase() || "").includes(
+            searchName.toLowerCase()
+          )
+      );
+
       setFilteredProducts(filtered);
     }
   }, [searchName, products]);
-
 
   const fetchImagesForProducts = async (products) => {
     if (imagesFetched.current) {
@@ -217,7 +233,7 @@ const Shoppage = () => {
       await Promise.all(
         products.map(async (product) => {
           const response = await axios.get(
-            `${API_URL}/api/public/productImages/getAll/${product.id}?positionId=1`
+            `http://localhost:8080/api/public/ShopImages/getAll/${product.id}?positionId=1`
           );
 
           // If the response contains image data, store it
@@ -239,12 +255,12 @@ const Shoppage = () => {
   useEffect(() => {
     fetchProducts();
   }, []);
+
   useEffect(() => {
     if (products.length > 0 && !imagesFetched.current) {
       fetchImagesForProducts(products);
     }
   }, [products]);
-
 
   return (
     <div className="shop-page">
@@ -264,133 +280,23 @@ const Shoppage = () => {
           </div>
         </div>
 
-        <div className="hero-Tabs-Container">
-          <div className="search-Input">
-            <div className="search-Box">
-              <FiSearch size={20} />
-              <input
-                id="searchName"
-                type="text"
-                placeholder="Search here..."
-                value={searchName}
-                onChange={handleSearchChange}
-              />
-            </div>
-          </div>
-        </div>
-
-        {hasSelectedFilters && (
-          <>
-            <button className="clear-All-Btn" onClick={clearAllFilters}>
-              Clear All
-            </button>
-
-            <div className="selected-Filters">
-              {selectedFilter && (
-                <div className="selected-Filter-Item">
-                  {selectedFilter}{" "}
-                  <button onClick={() => setSelectedFilter(null)}>×</button>
-                </div>
-              )}
-
-              {(minPrice || maxPrice) && (
-                <div className="selected-Filter-Item">
-                  Price:
-                  {minPrice && `₹ ${minPrice}`}
-                  {minPrice && maxPrice ? ` - ` : ""}
-                  {maxPrice && `₹ ${maxPrice}`}
-                  <button onClick={() => { setMinPrice(""); setMaxPrice(""); }}>×</button>
-                </div>
-              )}
-            </div>
-          </>
-        )}
-
         <div className="shoppage-Content">
-          <div className="templates-Filter">
-            <div className="template-Filter-Group">
-              <label
-                className="template-Filter-Name"
-                onClick={() => toggleFilter("CATEGORIES")}
-              >
-                CATEGORIES{" "}
-                <span>
-                  {openFilter === "CATEGORIES" ? <IoIosArrowUp /> : <IoIosArrowDown />}
-                </span>
-              </label>
-              {openFilter === "CATEGORIES" && (
-                <div className="template-Custom-Select">
-                  <ul className="template-Dropdown">
-                    {categories.map((category) => (
-                      <li key={category.id}>
-                        <label onClick={() => toggleCategory(category.id)}>
-                          {category.name}
-                          <span>
-                            {openCategory.includes(category.id) ? <IoIosArrowUp /> : <IoIosArrowDown />}
-                          </span>
-                        </label>
-
-                        {openCategory.includes(category.id) && (
-                          <ul className="sub-Dropdown">
-                            {subCategories
-                              .filter((sub) => sub.categoryId === category.id)
-                              .map((sub) => (
-                                <li key={sub.id}>
-                                  <label>
-                                    {sub.name}
-                                    <input
-                                      type="checkbox"
-                                      checked={selectedSubCategories.includes(sub.id)}
-                                      onChange={() => {
-                                        toggleSubCategorySelection(sub.id, category.name, sub.name);
-                                      }}
-                                    />
-                                  </label>
-                                </li>
-                              ))}
-                          </ul>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-
-            <div className="filter-Item">
-              <div className="dropdown-Header">
-                <label>Price Range</label>
-              </div>
-              <div className="price-Range">
-                <input
-                  type="number"
-                  placeholder="Min Price"
-                  value={minPrice}
-                  onChange={(e) => handlePriceChange(e, true)} // Pass true for minPrice
-                  className="price-Input"
-                />
-
-                <input
-                  type="number"
-                  placeholder="Max Price"
-                  value={maxPrice}
-                  onChange={(e) => handlePriceChange(e, false)} // Pass false for maxPrice
-                  className="price-Input"
-                />
-              </div>
-            </div>
-          </div>
-
           <div className="template-Cards">
             <div className="cards-Container">
-              {paginatedProducts.map((product, intex) => (
-                <div
-                  onClick={() => router.push(`/pages/PetDetails?productId=${product.id}&categoryId=${product.categoryId}`)}
-                  key={intex}
-                  className="card">
+              {paginatedProducts.map((product, index) => (
+                 <div
+                 key={index}
+                 className="card"
+                 onClick={() => {
+                   console.log("Product Details:", product); // Log the product details
+                   router.push(
+                     `/pages/Products?productId=${product.id}&categoryId=${product.categoryId}&userId=${product.userId}`
+                   );
+                 }}
+               >
                   <div className="product-card-img">
                     <img
-                      src={imageUrls[product.id] || "default-placeholder.jpg"}
+                      src={imageUrls[product.id] || "default-placeholder.jpg"} // Fallback to default if no image is found
                       alt={`product-img-${product.id}`}
                       className="default-img"
                     />
@@ -398,7 +304,9 @@ const Shoppage = () => {
 
                   <div className="card-Details">
                     <p className="card-Title">{product.productName}</p>
-                    <p className="card-Title">Shop Name: {product.shopName || "Location not available"}</p>
+                    <p className="card-Title">
+                      Shop Name: {product.shopName || "Location not available"}
+                    </p>
                   </div>
                 </div>
               ))}
