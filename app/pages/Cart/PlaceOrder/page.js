@@ -8,7 +8,7 @@ import { startLoading, stopLoading } from "@/app/redux/slices/loadingSlice";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/app/services/useAxiosInstance";
 
-import {clearCartItems} from '@/app/redux/slices/cartSlice'; 
+import { clearCartItems } from '@/app/redux/slices/cartSlice';
 
 const PlaceOrder = () => {
   const dispatch = useDispatch();
@@ -38,6 +38,7 @@ const PlaceOrder = () => {
   const [imageUrls, setImageUrls] = useState({});
   const imagesFetched = useRef(false);
   const [loading, setLoading] = useState(true);
+  const [shippingCharges, setShippingCharges] = useState([]);
 
   useEffect(() => {
     const currentDate = new Date();
@@ -93,7 +94,7 @@ const PlaceOrder = () => {
     const { name, value } = e.target;
 
     if (name === "phoneNumber" && !/^\d*$/.test(value)) {
-      return; 
+      return;
     }
 
     setFormData({ ...formData, [name]: value });
@@ -191,7 +192,23 @@ const PlaceOrder = () => {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [selectedAddress, setSelectedAddress] = useState(null);
-
+  // Fetch Cart Items
+  useEffect(() => {
+    const fetchCartData = async () => {
+      //dispatch(stopLoading());
+      setLoading(true);
+      try {
+        const response = await axios.get(`${API_URL}/cart/getAll?userId=${userId}`);
+        setCartItems(response.data);
+        console.log("Fetched Cart Items:", response.data);
+      } catch (err) {
+        console.error("Failed to fetch cart items", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCartData();
+  }, []);
   const fetchAddresses = async () => {
     try {
       dispatch(startLoading());
@@ -200,7 +217,7 @@ const PlaceOrder = () => {
       );
       if (response.data.length === 1) {
         setAddresses(response.data);
-        setSelectedAddressId(response.data[0].id); 
+        setSelectedAddressId(response.data[0].id);
         setSelectedAddress(response.data[0]);
       }
       setAddresses(response.data);
@@ -218,18 +235,87 @@ const PlaceOrder = () => {
   }, []);
 
 
-  const handleAddressChange = (addressId) => {
-    console.log(addressId);
+  const fetchShippingCharge = async (productId, destinationPinCode, orderWeight) => {
+    console.log(productId, destinationPinCode, orderWeight);
+
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/public/delhivery/checkServiceability`,
+        {
+          params: {
+            productId,
+            destinationPinCode,
+            orderWeight,
+          },
+        }
+      );
+
+      console.log("API Response:", response.data);
+
+      // If the response is an empty array or invalid, return 0 as the shipping charge
+      if (!response.data || response.data.length === 0) {
+        return 0;
+      }
+
+      return response.data.shippingCharge || 0; // Return 0 if shippingCharge is not available
+    } catch (error) {
+      console.error("Error fetching shipping charge:", error);
+      return 0; // Return 0 in case of error
+    }
+  };
+
+  // Example usage when an address is selected
+  const handleAddressChange = async (addressId) => {
+    console.log("Selected Address ID:", addressId);
+
     const selected = addresses.find((address) => address.id === parseInt(addressId));
-    console.log(selected);
+    console.log("Selected Address:", selected);
+
+    if (selected) {
+      console.log("Selected Address Postal Code:", selected.postalCode);
+
+      if (cartItems.length === 0) {
+        console.log("No items in the cart.");
+        return;
+      }
+
+      // Iterate over cart items and fetch shipping charges
+      const shippingCharges = await Promise.all(
+        cartItems.map(async (cartItem) => {
+          console.log("Fetching Shipping Charge for:");
+          console.log("Product ID:", cartItem.productId);
+          console.log("Postal Code:", selected.postalCode);
+          console.log("Weight:", cartItem.weight);
+
+          const shippingCharge = await fetchShippingCharge(
+            cartItem.productId,
+            selected.postalCode,
+            cartItem.weight
+          );
+
+          return {
+            productId: cartItem.productId,
+            postalCode: selected.postalCode,
+            weight: cartItem.weight,
+            shippingCharge: shippingCharge, // Use the fetched shipping charge or 0 if not available
+          };
+        })
+      );
+
+      console.log("Shipping Charges:", shippingCharges);
+
+      // Update the state/UI with the calculated shipping charges
+      // You can store the shipping charges in the state if needed
+      setShippingCharges(shippingCharges);
+    }
 
     setSelectedAddress(selected);
     setSelectedAddressId(addressId);
   };
+
   const handleAddNewAddress = () => {
     setIsFormVisible(true);
   };
-
   //card data
 
   const searchParams = useSearchParams();
@@ -237,57 +323,44 @@ const PlaceOrder = () => {
   const [cartItems, setCartItems] = useState([]);
   console.log("userId", userId);
 
-  // Fetch Cart Items
-  useEffect(() => {
-    const fetchCartData = async () => {
-      //dispatch(stopLoading());
-      setLoading(true);
-      try {
-        const response = await axios.get(`${API_URL}/cart/getAll?userId=${userId}`);
-        setCartItems(response.data);
-        console.log("Fetched Cart Items:", response.data);
-      } catch (err) {
-        console.error("Failed to fetch cart items", err);
-      } finally {
-        setLoading(false); 
-      }
-    };
-    fetchCartData();
-  }, []);
+
 
 
   // Calculate totals
   const calculateTotals = () => {
     let totalAmount = 0;
     let totalTax = 0;
-    const shippingCharge = 10;
 
     const updatedItems = cartItems.map((item) => {
-      const unitPrice = item.price;
-      const quantity = item.quantity;
-      const tax = unitPrice * 0.1;
-      const subtotal = unitPrice * quantity + tax;
+        const unitPrice = item.price;
+        const quantity = item.quantity;
+        const tax = unitPrice * 0.1;
+        const subtotal = unitPrice * quantity + tax;
 
-      totalTax += tax * quantity;
-      totalAmount += subtotal + shippingCharge;
+        // Get the shipping charge for this specific product
+        const shippingCharge = shippingCharges.find((charge) => charge.productId === item.productId)?.shippingCharge || 0;
 
-      return {
-        productId: item.productId,
-        productName: item.productName,
-        unitPrice,
-        quantity,
-        tax,
-        shippingCharge,
-        subtotal,
-      };
+        totalTax += tax * quantity;
+        totalAmount += subtotal + shippingCharge; // Ensures only numbers are added
+
+        return {
+            productId: item.productId,
+            productName: item.productName,
+            unitPrice,
+            quantity,
+            tax,
+            shippingCharge,
+            subtotal,
+        };
     });
 
     console.log("Transformed Items for Order:", updatedItems);
     console.log("Calculated Total Tax:", totalTax);
-    console.log("Calculated Grand Total:", totalAmount);
+    console.log("Calculated Grand Total:", totalAmount.toFixed(2)); // Ensuring it's a number
 
     return { updatedItems, totalTax, totalAmount };
-  };
+};
+
 
   const { updatedItems, totalTax, totalAmount } = calculateTotals();
 
@@ -298,14 +371,14 @@ const PlaceOrder = () => {
       alert("Please select a shipping address before placing the order.");
       return; // Stop execution if no address is selected
     }
-    
+
     const { updatedItems, totalAmount } = calculateTotals();
 
     const orderPayload = updatedItems.map((item) => ({
       userId: userId,
       unitPrice: item.unitPrice,
       quantity: item.quantity,
-      tax: item.tax,
+      tax: totalTax,
       shippingCharge: item.shippingCharge,
       subtotal: item.subtotal,
       totalAmount: totalAmount,
@@ -411,10 +484,8 @@ const PlaceOrder = () => {
         <div className="placeOrderHead">
           <h2>Place Order</h2>
         </div>
-        {loading ? ( 
-          <p>Loading cart items...</p>
-        ) : !isFormVisible &&  (
-        // {!isFormVisible && (
+
+        {!isFormVisible && (
           <>
             <div className="placeOrderContentMain">
               <div className="placeOrderContentHead">
@@ -606,50 +677,55 @@ const PlaceOrder = () => {
           <div className="orderContainerContent">
             {loading ? (
               <p>Loading cart items...</p>
-              ) : cartItems.length === 0 ? (
-                <p>No items in cart</p>
-              ) : (
-                <table className="place-cart-items">
-                  <thead>
-                    <tr>
-                      <th>Product Image</th>
-                      <th>Product Name</th>
-                      <th>Price</th>
-                      <th>Tax</th>
-                      <th>Quantity</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {updatedItems.map((item, index) => (
-                      <tr key={index}>
-                        <td className="place-image-column">
-                          {imageUrls[item.productId] ? (
-                            <img src={imageUrls[item.productId]} alt={item.productName} />
-                          ) : (
-                            <p>Image not available</p>
-                          )}
-                        </td>
-                        <td className="place-details-column">
-                          {item.productName}
-                        </td>
-                        <td className="place-price-column">
-                          {item.unitPrice.toFixed(2)}
-                        </td>
-                        <td>
-                          {item.tax.toFixed(2)}
-                        </td>
-                        <td>
-                          {item.quantity}
-                        </td>
-                      </tr>
-                    ))}
-                    <tr className="place-card-bottom">
-                      <td colSpan="4">
-                        Total: ₹ {totalAmount.toFixed(2)}
+            ) : cartItems.length === 0 ? (
+              <p>No items in cart</p>
+            ) : (
+              <table className="place-cart-items">
+                <thead>
+                  <tr>
+                    <th>Product Image</th>
+                    <th>Product Name</th>
+                    <th>Price</th>
+                    <th>Shipping Charge</th>
+                    <th>Tax</th>
+                    <th>Quantity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {updatedItems.map((item, index) => (
+                    <tr key={index}>
+                      <td className="place-image-column">
+                        {imageUrls[item.productId] ? (
+                          <img src={imageUrls[item.productId]} alt={item.productName} />
+                        ) : (
+                          <p>Image not available</p>
+                        )}
+                      </td>
+                      <td className="place-details-column">
+                        {item.productName}
+                      </td>
+                      <td className="place-price-column">
+                        {item.unitPrice.toFixed(2)}
+                      </td>
+                      <td>
+                        {/* Display shipping charge */}
+                        {shippingCharges[index]?.shippingCharge || 0}
+                      </td>
+                      <td>
+                        {item.tax.toFixed(2)}
+                      </td>
+                      <td>
+                        {item.quantity}
                       </td>
                     </tr>
-                  </tbody>
-                </table>
+                  ))}
+                  <tr className="place-card-bottom">
+                    <td colSpan="4">
+                      Total: ₹ {totalAmount.toFixed(2)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             )}
           </div>
           <div className="place-order-btn">

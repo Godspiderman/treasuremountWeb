@@ -4,7 +4,7 @@ import './Pagenation.scss';
 
 function Pagination({ currentPage, pageCount, setCurrentPage }) {
   const getPageNumbers = () => {
-    const totalPageNumbers = 5;
+    const totalPageNumbers = 3;
     const startPage = Math.max(0, currentPage - Math.floor(totalPageNumbers / 2));
     const endPage = Math.min(pageCount - 1, startPage + totalPageNumbers - 1);
 

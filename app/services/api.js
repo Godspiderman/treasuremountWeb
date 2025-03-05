@@ -47,7 +47,15 @@ export const fetchSubCategories = async () => {
   }
 };
 
-
+export const getAllTestimonials = async () => {
+  try {
+    const response = await api.get(`api/public/testimonial/getAll`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching testimonials:', error.response?.data || error.message);
+    throw error;
+  }
+};
 
 // User Controll ///
 
@@ -71,7 +79,6 @@ export const updateUser = async (id, userData) => {
     throw error;
   }
 };
-
 
 
 
@@ -154,3 +161,12 @@ export const getAllCartItems = async (userId) => {
 
 
 
+export const getVendorById = async (id) => {
+  try {
+    const response = await api.get(`/api/public/vendor/getOne/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching vendor with id ${id}:`, error.response?.data || error.message);
+    throw error;
+ }
+};

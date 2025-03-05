@@ -27,18 +27,21 @@ const Signup = () => {
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
+  const [showPassword, setShowPassword] = useState(false); 
   const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
 
   // Form validation
   const validateForm = () => {
     const newErrors = {};
     if (!formData.firstName.trim()) newErrors.firstName = "First name is required.";
+    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required.";
+
     if (!formData.emailId.trim()) {
       newErrors.emailId = "Email is required.";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailId)) {
       newErrors.emailId = "Invalid email format.";
-    }
+    }   
+
     if (!formData.mobileNumber.trim()) {
       newErrors.mobileNumber = "Mobile number is required.";
     } else if (!/^\d{10}$/.test(formData.mobileNumber)) {
@@ -49,8 +52,8 @@ const Signup = () => {
       newErrors.password = "Password is required.";
     } else if (formData.password.length < 6) {
       newErrors.password = "Password must be at least 6 characters.";
-    } else if (!/[a-zA-Z]/.test(formData.password)) {
-      newErrors.password = "Password must contain at least one alphabetic character.";
+    } else if (formData.password.length > 15) {
+      newErrors.password = "Password must be no longer than 15 characters.";
     }
     
     if (!formData.confirmPassword.trim()) {
@@ -59,34 +62,38 @@ const Signup = () => {
       newErrors.confirmPassword = "Passwords do not match.";
     }
     
+    
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   // Handle input changes
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
-    // Clear previous error for the current field
+  
     setErrors((prev) => ({ ...prev, [name]: "" }));
-
-    // Real-time validation for email and mobile number
+  
     if (name === "emailId") {
-        if (!value.trim()) {
-            setErrors((prev) => ({ ...prev, emailId: "Email is required." }));
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-            setErrors((prev) => ({ ...prev, emailId: "Email ID must be alphanumeric and end with @gmail.com." }));
-        }
+      if (!value.trim()) {
+        setErrors((prev) => ({ ...prev, emailId: "Email is required." }));
+      } else if (!emailPattern.test(value)) {
+        setErrors((prev) => ({ ...prev, emailId: "Invalid email format." }));
+      }
     } else if (name === "mobileNumber") {
-        if (!value.trim()) {
-            setErrors((prev) => ({ ...prev, mobileNumber: "Mobile number is required." }));
-        } else if (!/^\d{10}$/.test(value)) {
-            setErrors((prev) => ({ ...prev, mobileNumber: "Enter a valid 10-digit mobile number." }));
-        }
+      if (!value.trim()) {
+        setErrors((prev) => ({ ...prev, mobileNumber: "Mobile number is required." }));
+      } else if (!/^\d{10}$/.test(value)) {
+        setErrors((prev) => ({ ...prev, mobileNumber: "Enter a valid 10-digit mobile number." }));
+      }
     }
-};
+  };
+  
 
 
   // Handle form submission
@@ -160,11 +167,12 @@ const Signup = () => {
                 <div className="signup-form1">
                     <label>First Name</label>
                     <input
-                    type="text"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    className={errors.firstName ? "input-error" : ""}
+                      type="text"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      maxLength={100}
+                      className={errors.firstName ? "input-error" : ""}
                     />
                     {errors.firstName && <p className="error-message">{errors.firstName}</p>}
                 </div>
@@ -172,21 +180,24 @@ const Signup = () => {
                 <div className="signup-form1">
                     <label>Last Name</label>
                     <input
-                    type="text"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      maxLength={100}
                     />
+                     {errors.lastName && <p className="error-message">{errors.lastName}</p>}
                 </div>
 
                 <div className="signup-form1">
                     <label>Email</label>
                     <input
-                    type="email"
-                    name="emailId"
-                    value={formData.emailId}
-                    onChange={handleChange}
-                    className={errors.emailId ? "input-error" : ""}
+                      type="email"
+                      name="emailId"
+                      value={formData.emailId}
+                      onChange={handleChange}
+                      maxLength={100}
+                      className={errors.emailId ? "input-error" : ""}
                     />
                     {errors.emailId && <p className="error-message">{errors.emailId}</p>}
                 </div>
@@ -194,17 +205,12 @@ const Signup = () => {
                 <div className="signup-form1">
                     <label>Mobile Number</label>
                     <input
-                    type="text"
-                    name="mobileNumber"
-                    maxLength={10}
-                    value={formData.mobileNumber}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^\d*$/.test(value)) {
-                          handleChange(e);
-                      }
-                  }}
-                    className={errors.mobileNumber ? "input-error" : ""}
+                      type="text"
+                      name="mobileNumber"
+                      maxLength={10}
+                      value={formData.mobileNumber}
+                      onChange={handleChange}
+                      className={errors.mobileNumber ? "input-error" : ""}
                     />
                     {errors.mobileNumber && <p className="error-message">{errors.mobileNumber}</p>}
                 </div>
@@ -217,6 +223,7 @@ const Signup = () => {
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
+                      maxLength={15}
                       className={errors.password ? "input-error" : ""}
                     />
                     <span
@@ -237,6 +244,7 @@ const Signup = () => {
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
+                      maxLength={50}
                       className={errors.confirmPassword ? "input-error" : ""}
                     />
                     <span

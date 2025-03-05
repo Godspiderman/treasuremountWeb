@@ -9,7 +9,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { API_URL } from "@/app/services/useAxiosInstance";
 
 function PetAdd() {
-  const searchParams = useSearchParams(); // Use searchParams to get query parameters
+  const searchParams = useSearchParams();
   const id = searchParams.get("id");
   console.log(id);
   const router = useRouter();
@@ -27,7 +27,7 @@ function PetAdd() {
 
   useEffect(() => {
     if (!id) return;
-  
+
     const fetchData = async () => {
       try {
         const response = await fetch(`${API_URL}/api/public/resource/pet/getOne/${id}`);
@@ -41,10 +41,10 @@ function PetAdd() {
         console.error("Error fetching pet data:", err);
       }
     };
-  
+
     fetchData();
   }, [id]);
-  
+
 
 
 
@@ -345,13 +345,13 @@ function PetAdd() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    const errors = validateForm() || {}; 
+
+    const errors = validateForm() || {};
     if (Object.keys(errors).length > 0) {
       console.error("Validation errors:", errors);
       return;
     }
-  
+
     const dataToSend = {
       id: formData.id === 0 ? undefined : parseInt(formData.id), // Use undefined if id is 0, otherwise parseInt
       productId: parseInt(formData.productId),
@@ -387,16 +387,16 @@ function PetAdd() {
       isInsured: formData.isInsured,
       insuredCertificationUrl: formData.insuredCertificationUrl,
     };
-  
+
     console.log("Submitting payload:", JSON.stringify(dataToSend, null, 2));
-  
+
     try {
-      const url = formData.id === 0 
-        ? `${API_URL}/api/public/resource/pet/add` 
+      const url = formData.id === 0
+        ? `${API_URL}/api/public/resource/pet/add`
         : `${API_URL}/api/public/resource/pet/update/${id}`;
-  
+
       const method = formData.id === 0 ? "POST" : "PUT";
-  
+
       const response = await fetch(url, {
         method: method,
         headers: {
@@ -404,18 +404,18 @@ function PetAdd() {
         },
         body: JSON.stringify(dataToSend),
       });
-  
+
       console.log("API Response Status:", response.status);
-  
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`API Error: ${response.status} - ${errorText}`);
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-  
+
       const responseData = await response.json();
       console.log("Operation successful:", responseData);
-  
+
       const newProductId = responseData?.productId || formData.productId;
       if (newProductId) {
         try {
@@ -446,10 +446,24 @@ function PetAdd() {
                 <input
                   name="productName"
                   className="user-profile-content-input"
-                  value={formData.productName || ""} 
+                  value={formData.productName || ""}
                   onChange={handleInputChange}
                 />
               </div>
+              <div className="form1">
+                <label>Category:</label>
+                <select
+                  className="user-profile-content-input"
+                  name="categoryId"
+                  value={formData.categoryId || ""}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Select a Category</option>
+                  <option value="1">Pets</option>
+                  <option value="7">Farm Animals</option>
+                </select>
+              </div>
+
               <div className="form1">
                 <label>SubCategory:</label>
                 <select
@@ -598,7 +612,7 @@ function PetAdd() {
                 <label>Discount:</label>
                 <input
                   name="discount"
-                  value={formData.discount || ""} 
+                  value={formData.discount || ""}
                   onChange={handleInputChange}
                   className="user-profile-content-input"
                 />

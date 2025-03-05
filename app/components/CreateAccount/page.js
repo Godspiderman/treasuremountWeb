@@ -1,10 +1,12 @@
 "use client";
+
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/app/services/useAxiosInstance";
 
 const CreateAccount = () => {
   const router = useRouter();
+
   const initialFormData = {
     firstName: "",
     lastName: "",
@@ -13,6 +15,7 @@ const CreateAccount = () => {
     password: "",
     confirmPassword: "",
   };
+
   const initialErrors = {
     firstName: "",
     lastName: "",
@@ -29,6 +32,7 @@ const CreateAccount = () => {
     setFormData(initialFormData);
     setErrors(initialErrors);
   };
+
   const validate = () => {
     const newErrors = {};
     if (!formData.firstName.trim())
@@ -47,6 +51,7 @@ const CreateAccount = () => {
       newErrors.confirmPassword = "Passwords do not match";
     return newErrors;
   };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -104,7 +109,7 @@ const CreateAccount = () => {
         let data = null;
 
         if (contentType && contentType.includes("application/json")) {
-          data = await response.json(); // Safely parse JSON if it's available
+          data = await response.json(); 
         }
 
         console.log("Account created successfully:", data);
@@ -114,10 +119,9 @@ const CreateAccount = () => {
         setFormData(initialFormData);
         setErrors(initialErrors);
       } else {
-        const errorMessage = await response.text(); // Capture error message if available
+        const errorMessage = await response.text(); 
         console.error("Failed to create account:", errorMessage);
 
-        // Update error state
         setErrors((prevErrors) => ({
           ...prevErrors,
           apiError:

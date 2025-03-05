@@ -1,6 +1,7 @@
 "use client";
+
 import { useSelector } from "react-redux";
-import "./GlobalLoader.scss"; // Style for your loader
+import "./GlobalLoader.scss"; 
 import { selectIsLoading } from "@/app/redux/slices/loadingSlice";
 
 const GlobalLoader = () => {

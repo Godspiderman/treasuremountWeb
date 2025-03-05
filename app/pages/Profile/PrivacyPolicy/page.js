@@ -1,5 +1,8 @@
 import React from 'react';
 
+
+import "./PrivacyPolicy.scss";
+
 function PrivacyPolicy() {
   return (
     <div className="privacy-policy">

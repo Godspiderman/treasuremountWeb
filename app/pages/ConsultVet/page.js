@@ -5,12 +5,16 @@ import { useRouter } from "next/navigation";
 import { IoLocationSharp } from "react-icons/io5";
 import Pagination from "@/app/utils/Pagenation/Pagenation";
 import { API_URL } from "@/app/services/useAxiosInstance";
+import { useDispatch } from "react-redux";
+import { startLoading, stopLoading } from "@/app/redux/slices/loadingSlice";
 
 const ConsultVet = () => {
   const router = useRouter();
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const dispatch = useDispatch();
 
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -25,32 +29,37 @@ const ConsultVet = () => {
   };
 
   const fetchVeterinarians = async () => {
+    dispatch(startLoading());
     setLoading(true);
     setError(null);
-
+  
     try {
       const queryParams = new URLSearchParams();
       if (date) queryParams.append("date", date);
       if (startTime) queryParams.append("start", startTime);
       if (endTime) queryParams.append("end", endTime);
-
+  
       const response = await fetch(
         `${API_URL}/api/public/veterinarian/getAll?${queryParams.toString()}`
       );
-
+  
       if (!response.ok) {
-        throw new Error("Failed to fetch veterinarian details.");
+        throw new Error(`Failed to fetch veterinarian details. Status: ${response.status}`);
       }
-      const data = await response.json();
-      console.log("Fetched Data:", data);
-      setDoctors(data);
+  
+      const data = await response.json(); // Ensure data is extracted correctly
+      console.log("Fetched Data:", data); // Log correctly formatted data
+  
+      setDoctors(Array.isArray(data) ? data : []); // Ensure doctors state is always an array
     } catch (err) {
+      console.error("Fetch error:", err);
       setError(err.message);
     } finally {
+      dispatch(stopLoading());
       setLoading(false);
     }
   };
-
+  
   useEffect(() => {
     fetchVeterinarians();
   }, [date, startTime, endTime]);
@@ -133,38 +142,38 @@ const ConsultVet = () => {
             paginatedDoctors.map((vet) => (
               <div
                 className="consult-about-card"
-                key={vet.veterinarianDTO.id}
-                onClick={() => handleChange(vet.veterinarianDTO.id)}
+                key={vet.id}
+                onClick={() => handleChange(vet.id)}
               >
                 <div className="consult-about-img">
                   <img
-                    src={vet.veterinarianDTO.imageUrl || "/image/doctor.jpg"}
-                    alt={`About ${vet.userDTO.firstName} ${vet.userDTO.lastName}`}
+                    src={vet.imageUrl || "/image/doctor.jpg"}
+                    alt={`About ${vet.firstName} ${vet.lastName}`}
                   />
                 </div>
                 <div className="consult-about-texts">
                   <div className="consult-about-para">
                     <h1 className="consult-name">
-                      {vet.userDTO.firstName} {vet.userDTO.lastName}
+                      {vet.firstName} {vet.lastName}
                     </h1>
                     <h3 className="consult-university">
-                      {vet.veterinarianDTO.education}
+                      {vet.education}
                     </h3>
 
                     <p>
-                      Year of Experience: {vet.veterinarianDTO.yearsOfExperience}
+                      Year of Experience: {vet.yearsOfExperience}
                     </p>
 
-                    <p>Languages: {vet.veterinarianDTO.language}</p>
+                    <p>Languages: {vet.language}</p>
 
-                    <p>Animal Type: {vet.veterinarianDTO.animalType}</p>
+                    <p>Animal Type: {vet.animalType}</p>
 
                     <p className="consult-location">
-                      <IoLocationSharp /> {vet.veterinarianDTO.city}
+                      <IoLocationSharp /> {vet.city}
                     </p>
 
                     <div className="consult-about-btn">
-                      <button>Learn More</button>
+                      <button> Book Appointment</button>
                     </div>
                   </div>
                 </div>

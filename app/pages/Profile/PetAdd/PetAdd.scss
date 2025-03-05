@@ -5,7 +5,7 @@
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 20px;
+                padding: 20px 20px 0;
 
                 h2 {
                     font-weight: 700;
@@ -13,20 +13,28 @@
             }
 
             .user-data-1 {
-                
+
                 .form-2 {
                     display: flex;
                     flex-wrap: wrap;
                     gap: 10px;
                     padding: 20px;
 
-                    .errors{
+                    @media (max-width: 480px) {
+                        display: block;
+                    }
+
+                    .errors {
                         color: red;
                     }
-                    .form1 {
 
+                    .form1 {
                         margin: 5px 0;
                         width: calc(50% - 10px);
+
+                        @media (max-width: 480px) {
+                            width: 100%;
+                        }
 
                         label {
                             display: block;
@@ -63,6 +71,10 @@
                 justify-content: end;
                 padding: 20px;
 
+                @media (max-width: 480px) {
+                    justify-content: left;
+                }
+
                 .edit-btn {
                     display: flex;
                     align-items: center;
@@ -75,12 +87,6 @@
                         border-radius: 5px;
                         color: white;
                         background-color: var(--btn-background-color);
-                        opacity: 0.6;
-                        transition: 0.3s;
-
-                        &:hover {
-                            opacity: 1;
-                        }
 
                         p {
                             color: #ffffff;
@@ -99,12 +105,6 @@
                     border-radius: 5px;
                     color: white;
                     background-color: var(--btn-background-color);
-                    opacity: 0.6;
-                    transition: 0.3s;
-
-                    &:hover {
-                        opacity: 1;
-                    }
                 }
             }
 
@@ -113,6 +113,10 @@
                 display: flex;
                 justify-content: space-between;
                 width: calc(100% - 15px);
+
+                @media (max-width: 480px) {
+                    display: block;
+                }
 
                 .alert-msg {
                     display: flex;
@@ -130,6 +134,10 @@
                     align-items: center;
                     gap: 20px;
 
+                    @media (max-width: 480px) {
+                        display: block;
+                    }
+
                     .update-btn {
                         cursor: pointer;
                         padding: 10px 70px;
@@ -140,11 +148,10 @@
                         text-align: center;
                         font-weight: 700;
                         font-size: 1rem;
-                        opacity: 0.6;
-                        transition: 0.3s;
 
-                        &:hover {
-                            opacity: 1;
+                        @media (max-width: 480px) {
+                            margin-bottom: 10px;
+                            margin-top: 10px;
                         }
                     }
 

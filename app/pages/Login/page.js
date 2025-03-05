@@ -52,6 +52,10 @@ const Login = () => {
       setPasswordError("Password is required.");
       isValid = false;
     }
+    else if (password.length > 50) {
+      setPasswordError("Password must be 50 characters or fewer.");
+      isValid = false;
+    }
 
     return isValid;
   };
@@ -65,7 +69,7 @@ const Login = () => {
     console.log(identifier,password);
 
     try {
-      console.log("dw");
+      console.log("login success");
       
       const response = await axios.post(
         `${API_URL}/api/login-api/login`,
@@ -93,21 +97,59 @@ const Login = () => {
   };
 
 
+  // const handleLoginError = (errorData) => {
+  //   if (errorData.error) {
+  //     if (errorData.error.includes("password") && !errorData.error.includes("username")) {
+  //       setPasswordError("Enter correct password.");
+  //     } 
+  //     else if (errorData.error.includes("username")) {
+  //       setIdentifierError("Invalid email or phone number.");
+  //     }
+
+  //     if (errorData.error.includes("password")) {
+  //       if (formData.password.length < 6) {
+  //         setPasswordError("Password must be at least 6 characters.");
+  //       } else if (formData.password.length > 15) {
+  //         setPasswordError("Password must be no longer than 15 characters.");
+  //       } else {
+  //         setPasswordError("Invalid password.");
+  //       }
+  //     }
+      
+  //   }
+  //    else {
+  //     setIdentifierError("Invalid email or phone number.");
+  //     setPasswordError("Invalid password.");
+  //   }
+
+  // };
+
+
   const handleLoginError = (errorData) => {
     if (errorData.error) {
       if (errorData.error.includes("password") && !errorData.error.includes("username")) {
         setPasswordError("Enter correct password.");
-      } else if (errorData.error.includes("username")) {
+      }
+  
+      else if (errorData.error.includes("username")) {
         setIdentifierError("Invalid email or phone number.");
       }
-      if (errorData.error.includes("password")) {
+  
+
+      if (formData.password.length < 6) {
+        setPasswordError("Password must be at least 6 characters.");
+      } else if (formData.password.length > 15) {
+        setPasswordError("Password must be no longer than 15 characters.");
+      } else if (errorData.error.includes("password")) {
         setPasswordError("Invalid password.");
       }
+      
     } else {
       setIdentifierError("Invalid email or phone number.");
       setPasswordError("Invalid password.");
     }
   };
+  
 
   return (
     <div className='login'>
@@ -115,7 +157,6 @@ const Login = () => {
 
         <div className='login-img'>
           <div className='login-img-box'>
-            {/* <img src={require('../../assets/img/Laptop-service.jpg')} alt='login-page' /> */}
             <img src="/image/login.png" alt='login-page' /> 
            
           </div>
@@ -135,9 +176,10 @@ const Login = () => {
                   type="text"
                   value={identifier}
                   className={identifierError ? "input-error" : ""}
+                  maxLength={100}
                   onChange={(e) => {
                     setIdentifier(e.target.value);
-                    setIdentifierError(""); // Clear the error when typing starts
+                    setIdentifierError("");
                   }}
                 />
                 {identifierError && <p className="error-message">{identifierError}</p>}
@@ -150,9 +192,10 @@ const Login = () => {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 className={passwordError ? "input-error" : ""}
+                maxLength={15}
                 onChange={(e) => {
                   setPassword(e.target.value);
-                  setPasswordError(""); // Clear the error when typing starts
+                  setPasswordError(""); 
                 }}
               />
               <span onClick={() => setShowPassword(!showPassword)}>
@@ -161,7 +204,7 @@ const Login = () => {
             </div>
             {passwordError && <p className="error-message">{passwordError}</p>}
 
-                <Link href='/forget-password' className ='forget'>Forget Password ?</Link>
+              <Link href='/forget-password' className ='forget'>Forget Password ?</Link>
                 
               </div>
               <div className='login-form-btns'>

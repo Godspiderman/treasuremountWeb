@@ -9,6 +9,7 @@ const ClientProvider = dynamic(() => import("./components/ClientProvider/page"))
 export const metadata = {
   title: "Treasuremount",
   description: "Treasuremount website",
+
 };
 
 export default function RootLayout({ children }) {

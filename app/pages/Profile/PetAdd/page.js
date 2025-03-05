@@ -9,16 +9,19 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { startLoading, stopLoading } from "@/app/redux/slices/loadingSlice";
 import { API_URL } from "@/app/services/useAxiosInstance";
 
-function PetAdd() {
+function PetAdd({ id , onNavigate }) {
+  
   const dispatch = useDispatch();
-  const searchParams = useSearchParams(); // Use searchParams to get query parameters
-  const id = searchParams.get("id");
+  // const searchParams = useSearchParams();
+  // const id = searchParams.get("id");
   console.log(id);
   const router = useRouter();
+  const isAddPet = id === null || id <= 0;
 
   const [subCategories, setSubCategories] = useState([]);
   const [errors, setErrors] = useState({});
-  const userId = useSelector((state) => state.auth.user.userId);
+  const authState = useSelector((state) => state.auth);
+  const userId = authState?.user?.userId;
 
   const [productImageList, setProductImageList] = useState([]);
   const [productImageLists, setProductImageLists] = useState([]);
@@ -26,6 +29,10 @@ function PetAdd() {
   const [selectedPosition, setSelectedPosition] = useState("");
   const [positions, setPositions] = useState([]);
 
+  const handleGoBack = () => {
+    setFormData({});
+    onNavigate('add-pets'); 
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -71,11 +78,6 @@ function PetAdd() {
   }, []);
 
 
-  const navigateToAddPets = () => {
-    setFormData({});
-    router.push('/pages/Profile');
-  };
-
 
   const defaultFormData = {
     id: 0,
@@ -110,36 +112,51 @@ function PetAdd() {
     subCategoryId: 0,
     productStatusId: 1,
     userId: userId,
-    categoryId: 1,
+    categoryId: 0,
   };
 
   const [formData, setFormData] = useState(defaultFormData);
 
 
 
-  useEffect(() => {
-    fetchSubCategories();
-  }, []);
+useEffect(() => {
+  if (formData.categoryId) {
+    fetchSubCategories(formData.categoryId);
+  }
+}, [formData.categoryId]);
 
 
-  const fetchSubCategories = async () => {
+  const fetchSubCategories = async (categoryId) => {
     try {
-      const response = await fetch(`${API_URL}/api/public/subCategory/getAllSubCategory/${1}`);
+      const response = await fetch(
+        `${API_URL}/api/public/subCategory/getAllSubCategory/${categoryId}`
+      );
       const data = await response.json();
       setSubCategories(data);
-      console.log('setSubCategories:', data);
+      console.log("setSubCategories:", data);
     } catch (error) {
-      console.error('Error fetching countries:', error);
+      console.error("Error fetching subcategories:", error);
     }
   };
 
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
+  
+    // Update the form data
+    setFormData((prevState) => ({
+      ...prevState,
       [name]: value,
     }));
+  
+    if (value && errors[name]) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [name]: "",
+      }));
+    }
   };
+  
 
 
   const handleAdd = async () => {
@@ -259,11 +276,13 @@ function PetAdd() {
     if (!formData.stockQuantity) {
       formErrors.stockQuantity = "Stock Quantity is required.";
     } else if (isNaN(formData.stockQuantity) || formData.stockQuantity < 0) {
-      formErrors.stockQuantity = "Stock Quantity must be a whole number greater than or equal to 0.";
+      formErrors.stockQuantity = "Stock Quantity must be a number greater than or equal to 0.";
     }
 
     if (!formData.minStockLevel) {
       formErrors.minStockLevel = "Minimum Stock Level is required.";
+    } else if (isNaN(formData.minStockLevel) || formData.minStockLevel < 0) {
+      formErrors.minStockLevel = "Minimum Stock Level must be a number greater than or equal to 0.";
     }
 
     if (!formData.discount && formData.discount !== 0) {
@@ -274,14 +293,25 @@ function PetAdd() {
 
     if (!formData.returnWithin) {
       formErrors.returnWithin = "Return Within Level is required.";
+    } else if (isNaN(formData.returnWithin) || formData.returnWithin <= 0) {
+      formErrors.returnWithin = "Return Within must be a positive number.";
     }
 
     if (!formData.videoUrl) {
       formErrors.videoUrl = "Video Url is required.";
     }
+    else {
+      try {
+        new URL(formData.videoUrl); 
+      } catch (_) {
+        formErrors.videoUrl = "Invalid video URL format.";
+      }
+    }
 
     if (!formData.barCode) {
-      formErrors.barCode = "Bar Code is required.";
+      formErrors.barCode = "Code is required.";
+    } else if (isNaN(formData.barCode || formData.barCode <= 0)) {
+      formErrors.barCode = "Code must be a positive number.";
     }
 
     if (!formData.breed) {
@@ -312,8 +342,10 @@ function PetAdd() {
       formErrors.year = "Year is required.";
     }
 
-    if (!formData.discount) {
+    if (!formData.discount && formData.discount !== 0) {
       formErrors.discount = "Discount is required.";
+    } else if (isNaN(formData.discount) || formData.discount < 0 || formData.discount > 100) {
+      formErrors.discount = "Discount must be a number between 0 and 100.";
     }
 
     if (!formData.month) {
@@ -322,14 +354,14 @@ function PetAdd() {
 
     if (!formData.healthInfo || !formData.healthInfo.trim()) {
       formErrors.healthInfo = "Health Info is required.";
-    } else if (formData.healthInfo.length > 200) {
-      formErrors.healthInfo = "Health Info must not exceed 200 characters.";
+    } else if (formData.healthInfo.length > 100) {
+      formErrors.healthInfo = "Health Info must not exceed 100 characters.";
     }
 
     if (!formData.specialRequirements || !formData.specialRequirements.trim()) {
       formErrors.specialRequirements = "Special Requirements are required.";
-    } else if (formData.specialRequirements.length > 300) {
-      formErrors.specialRequirements = "Special Requirements must not exceed 300 characters.";
+    } else if (formData.specialRequirements.length > 100) {
+      formErrors.specialRequirements = "Special Requirements must not exceed 100 characters.";
     }
 
     if (!formData.careInstructions) {
@@ -340,8 +372,8 @@ function PetAdd() {
 
     if (!formData.about) {
       formErrors.about = "About is required.";
-    } else if (formData.about.length > 1000) {
-      formErrors.about = "About must not exceed 1000 characters.";
+    } else if (formData.about.length > 500) {
+      formErrors.about = "About must not exceed 500 characters.";
     }
 
     setErrors(formErrors);
@@ -425,7 +457,7 @@ function PetAdd() {
 
       setFormData({});
       dispatch(stopLoading());
-      navigateToAddPets();
+      handleGoBack();
     } catch (error) {
       console.error("Error submitting form:", error.message || error.response?.data);
       dispatch(stopLoading());
@@ -435,26 +467,41 @@ function PetAdd() {
 
   return (
     <div className="Pet-add">
-      <div className="Pet-add-container">
+      <div className="Pet-add-container box-shadow">
         <div className="Pet-add-contents">
           <div className="Pet-add-head">
-            <h2>Add Pets:</h2>
+              <h2>{isAddPet ? "Add Pet" : "Edit Pet"}</h2>
           </div>
           <div className="user-data-1">
             <div className="form-2">
               <div className="form1">
-                <label>Name:</label>
+                <label>Name <span className="error">*</span></label>
                 <input
                   name="productName"
                   className={`user-profile-content-input ${errors.productName ? 'errors' : ''}`}
                   value={formData.productName || ""}
+                  maxLength={100}
                   onChange={handleInputChange}
                 />
                 {errors.productName && <span className="errors">{errors.productName}</span>}
               </div>
 
               <div className="form1">
-                <label>SubCategory:</label>
+                <label>Category <span className="error">*</span></label>
+                <select
+                  className="user-profile-content-input"
+                  name="categoryId"
+                  value={formData.categoryId || ""}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Select a Category</option>
+                  <option value="1">Pets</option>
+                  <option value="7">Farm Animals</option>
+                </select>
+              </div>
+
+              <div className="form1">
+                <label>SubCategory <span className="error">*</span></label>
                 <select
                   className="user-profile-content-input"
                   name="subCategoryId"
@@ -471,17 +518,18 @@ function PetAdd() {
                 {errors.subCategoryId && <span className="errors">{errors.subCategoryId}</span>}
               </div>
               <div className="form1">
-                <label>Breed :</label>
+                <label>Breed <span className="error">*</span></label>
                 <input
                   name="breed"
                   value={formData.breed || ""}
                   onChange={handleInputChange}
+                  maxLength={50}
                   className="user-profile-content-input"
                 />
                 {errors.breed && <span className="errors">{errors.breed}</span>}
               </div>
               <div className="form1">
-                <label>Gender:</label>
+                <label>Gender <span className="error">*</span></label>
                 <select
                   name="gender"
                   value={formData.gender || ""}
@@ -491,33 +539,36 @@ function PetAdd() {
                   <option value="">Select Gender</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
+                  <option value="Other">Other</option>
                 </select>
                 {errors.gender && <span className="errors">{errors.gender}</span>}
               </div>
 
               <div className="form1">
-                <label>Weight:</label>
+                <label>Weight <span className="error">*</span></label>
                 <input
                   name="weight"
                   value={formData.weight || ""}
                   onChange={handleInputChange}
+                  maxLength={3}
                   className={`content-input ${errors.weight ? 'error' : ''}`}
                 />
                 {errors.weight && <span className="errors">{errors.weight}</span>}
               </div>
               <div className="form1">
-                <label>Color:</label>
+                <label>Color <span className="error">*</span></label>
                 <input
                   name="color"
                   value={formData.color || ""}
                   onChange={handleInputChange}
+                  maxLength={50}
                   className={`content-input ${errors.color ? 'error' : ''}`}
                 />
                 {errors.color && <span className="errors">{errors.color}</span>}
               </div>
 
               <div className="form1">
-                <label>Year:</label>
+                <label>Year <span className="error">*</span></label>
                 <select
                   name="year"
                   value={formData.year || ""}
@@ -536,7 +587,7 @@ function PetAdd() {
               </div>
 
               <div className="form1">
-                <label>Month:</label>
+                <label>Month <span className="error">*</span></label>
                 <select
                   name="month"
                   value={formData.month || ""}
@@ -554,11 +605,12 @@ function PetAdd() {
               </div>
 
               <div className="form1">
-                <label>Health Info:</label>
+                <label>Health Info <span className="error">*</span></label>
                 <input
                   name="healthInfo"
                   value={formData.healthInfo || ""}
                   onChange={handleInputChange}
+                  maxLength={100}
                   className="user-profile-content-input"
                 />
                 {errors.healthInfo && <p className="errors">{errors.healthInfo}</p>}
@@ -566,22 +618,24 @@ function PetAdd() {
 
 
               <div className="form1">
-                <label>Stock Quantity:</label>
+                <label>Stock Quantity <span className="error">*</span></label>
                 <input
                   name="stockQuantity"
                   value={formData.stockQuantity || ""}
                   onChange={handleInputChange}
+                  maxLength={3}
                   className="user-profile-content-input"
                 />
                 {errors.stockQuantity && <p className="errors">{errors.stockQuantity}</p>}
               </div>
 
               <div className="form1">
-                <label>MinStock Level:</label>
+                <label>MinStock Level <span className="error">*</span></label>
                 <input
                   name="minStockLevel"
                   value={formData.minStockLevel || ""}
                   onChange={handleInputChange}
+                  maxLength={3}
                   className="user-profile-content-input"
                 />
                 {errors.minStockLevel && <p className="errors">{errors.minStockLevel}</p>}
@@ -589,22 +643,24 @@ function PetAdd() {
 
 
               <div className="form1">
-                <label>Price Details:</label>
+                <label>Price Details <span className="error">*</span></label>
                 <input
                   name="productPrice"
                   type='number'
                   value={formData.productPrice || ""}
                   onChange={handleInputChange}
+                  maxLength={50}
                   className="user-profile-content-input"
                 />
                 {errors.productPrice && <p className="errors">{errors.productPrice}</p>}
               </div>
               <div className="form1">
-                <label>Discount:</label>
+                <label>Discount Percentage:</label>
                 <input
                   name="discount"
                   value={formData.discount || ""}
                   onChange={handleInputChange}
+                  maxLength={3}
                   className="user-profile-content-input"
                 />
                 {errors.discount && <p className="errors">{errors.discount}</p>}
@@ -612,22 +668,24 @@ function PetAdd() {
 
 
               <div className="form1">
-                <label>Special Requirements:</label>
+                <label>Special Requirements <span className="error">*</span></label>
                 <input
                   name="specialRequirements"
                   value={formData.specialRequirements || ""}
                   onChange={handleInputChange}
+                  maxLength={100}
                   className="user-profile-content-input"
                 />
                 {errors.specialRequirements && <p className="errors">{errors.specialRequirements}</p>}
               </div>
 
               <div className="form1">
-                <label>Return Within:</label>
+                <label>Return Within (Days) <span className="error">*</span></label>
                 <input
                   name="returnWithin"
                   value={formData.returnWithin || ""}
                   onChange={handleInputChange}
+                  maxLength={3}
                   className="user-profile-content-input"
                 />
                 {errors.returnWithin && <p className="errors">{errors.returnWithin}</p>}
@@ -639,48 +697,52 @@ function PetAdd() {
                   name="videoUrl"
                   value={formData.videoUrl || ""}
                   onChange={handleInputChange}
+                  maxLength={300}
                   className="user-profile-content-input"
                 />
                 {errors.videoUrl && <p className="errors">{errors.videoUrl}</p>}
               </div>
               <div className="form1">
-                <label>Care Instructions:</label>
+                <label>Code:</label>
+                <input
+                  name="barCode"
+                  value={formData.barCode || ""}
+                  onChange={handleInputChange}
+                  maxLength={50}
+                  className="user-profile-content-input"
+                />
+                {errors.barCode && <p className="errors">{errors.barCode}</p>}
+              </div>
+              <div className="form1">
+                <label>Care Instructions <span className="error">*</span></label>
                 <textarea
                   name="careInstructions"
                   rows={2}
                   value={formData.careInstructions || ""}
                   onChange={handleInputChange}
+                  maxLength={500}
                   className="user-profile-content-input"
                 />
                 {errors.careInstructions && <p className="errors">{errors.careInstructions}</p>}
               </div>
               <div className="form1">
-                <label>About:</label>
+                <label>About <span className="error">*</span></label>
                 <textarea
                   name="about"
                   rows={2}
                   value={formData.about || ""}
                   onChange={handleInputChange}
+                  maxLength={500}
                   className="user-profile-content-input"
                 />
                 {errors.about && <p className="errors">{errors.about}</p>}
-              </div>
-              <div className="form1">
-                <label>BarCode:</label>
-                <input
-                  name="barCode"
-                  value={formData.barCode || ""}
-                  onChange={handleInputChange}
-                  className="user-profile-content-input"
-                />
-                {errors.barCode && <p className="errors">{errors.barCode}</p>}
               </div>
             </div>
           </div>
           <div className="user-data-1">
             <div className="form-2">
               <div className="form1">
-                <label>Select Image</label>
+                <label>Select Image <span className="error">*</span></label>
                 <div className="image-upload">
                   <input
                     type="file"
@@ -791,7 +853,7 @@ function PetAdd() {
                 <p className="error">*</p> is mandatory.
               </div>
               <div className='content-btn'>
-                <button type="button" className="cancel-btn" onClick={navigateToAddPets}>
+                <button type="button" className="cancel-btn" onClick={handleGoBack}>
                   Cancel
                 </button>
                 <button type="button" className="update-btn" onClick={handleSubmit}>

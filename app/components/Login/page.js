@@ -12,7 +12,7 @@ import axios from 'axios';
 const Login = () => {
   const router = useRouter();
 
-  const [identifier, setIdentifier] = useState(""); // Can be email or phone number
+  const [identifier, setIdentifier] = useState(""); 
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
@@ -27,7 +27,7 @@ const Login = () => {
   };
 
   const validatePhoneNumber = (phoneNumber) => {
-    const phonePattern = /^\d{10}$/; // Only 10 digits
+    const phonePattern = /^\d{10}$/;
     return phonePattern.test(phoneNumber);
   };
 
@@ -60,7 +60,7 @@ const Login = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      return; // If validation fails, don't proceed
+      return; 
     }
     console.log(identifier,password);
 
@@ -137,7 +137,7 @@ const Login = () => {
                   className={identifierError ? "input-error" : ""}
                   onChange={(e) => {
                     setIdentifier(e.target.value);
-                    setIdentifierError(""); // Clear the error when typing starts
+                    setIdentifierError(""); 
                   }}
                 />
                 {identifierError && <p className="error-message">{identifierError}</p>}
@@ -146,34 +146,34 @@ const Login = () => {
               <div className='login-form1'>
                 <label htmlFor='password'> Password <span className='red-mark'>*</span></label>
                 <div className="password-container">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  className={passwordError ? "input-error" : ""}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setPasswordError(""); // Clear the error when typing starts
-                  }}
-                />
-              <span onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ? <FaEye /> : <FaEyeSlash />}
-              </span>
-            </div>
-            {passwordError && <p className="error-message">{passwordError}</p>}
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    className={passwordError ? "input-error" : ""}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setPasswordError("");
+                    }}
+                  />
+                  <span onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <FaEye /> : <FaEyeSlash />}
+                  </span>
+                </div>
+                {passwordError && <p className="error-message">{passwordError}</p>}
 
                 <Link href='/forget-password' className ='forget'>Forget Password ?</Link>
                 
               </div>
               <div className='login-form-btns'>
              
-              <button type='submit' className='btn'>
-                Sign in
-              </button>
-       
-              <p className='link'>
-                Don't have account? <Link href='/pages/Signup'>Sign up </Link>{' '}
-              </p>
-            </div>
+                <button type='submit' className='btn'>
+                  Sign in
+                </button>
+        
+                <p className='link'>
+                  Don't have account? <Link href='/pages/Signup'>Sign up </Link>{' '}
+                </p>
+              </div>
             </form>
           </div>
           

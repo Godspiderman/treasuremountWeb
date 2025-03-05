@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { API_URL } from "@/app/services/useAxiosInstance";
+import { MdDeleteForever } from 'react-icons/md';
 
 function VendorPage() {
     const router = useRouter();
@@ -13,16 +14,25 @@ function VendorPage() {
     const [countryData, setCountryData] = useState([]);
     const [stateData, setStateData] = useState([]);
     const [formData, setFormData] = useState({
-        shopName: '',
-        contactDetails: '',
-        taxId: '',
-        registrationNumber: '',
-        city: '',
-        address: '',
-        gstNumber: '',
-        countryId: '',
-        stateId: ''
+        id: 0,
+        imageUrl: null,
+        shopName: "",
+        contactDetails: "",
+        taxId: "",
+        registrationNumber: "",
+        activeStatus: true,
+        address: "",
+        city: "",
+        gstNumber: "",
+        userId: userId,
+        postalCode: "",
+        createdDate: new Date().toISOString(),
+        modifiedDate: new Date().toISOString(),
+        countryId: 0,
+        stateId: 0,
     });
+    
+    
 
     useEffect(() => {
         fetchCountryData();
@@ -32,6 +42,9 @@ function VendorPage() {
     const fetchCountryData = async () => {
         try {
             const response = await fetch(`${API_URL}/api/public/country/getAll`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch countries');
+            }
             const data = await response.json();
             setCountryData(data);
             console.log('Country Data:', data);
@@ -43,6 +56,9 @@ function VendorPage() {
     const fetchStateData = async () => {
         try {
             const response = await fetch(`${API_URL}/api/public/state/getAll`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch states');
+            }
             const data = await response.json();
             setStateData(data);
             console.log('State Data:', data);
@@ -53,243 +69,359 @@ function VendorPage() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        
-        // Clear the error for the specific field if the user types in it
+    
+        // Split the name into parts (e.g., "userDTO.firstName" => ["userDTO", "firstName"])
+        const nameParts = name.split(".");
+    
+        // Update the form data
+        setFormData((prevData) => {
+            const newData = { ...prevData };
+    
+            // Traverse the nested structure
+            let current = newData;
+            for (let i = 0; i < nameParts.length - 1; i++) {
+                current = current[nameParts[i]];
+            }
+    
+            // Update the final property
+            current[nameParts[nameParts.length - 1]] = value;
+    
+            return newData;
+        });
+    
+        // Clear errors for the field
         setErrors((prevErrors) => {
             const newErrors = { ...prevErrors };
             if (newErrors[name]) {
-                delete newErrors[name]; // Remove error for the specific field
+                delete newErrors[name];
             }
             return newErrors;
         });
-    
-        // Update the form data
-        setFormData((prevData) => ({ ...prevData, [name]: value }));
     };
-    
 
     const handleCancel = () => {
-        router.push("/pages/Profile");
+
+        setFormData({
+            id: 0,
+            imageUrl: null,
+            shopName: "",
+            contactDetails: "",
+            taxId: "",
+            registrationNumber: "",
+            activeStatus: true,
+            address: "",
+            city: "",
+            gstNumber: "",
+            userId: 0,
+            postalCode: "",
+            createdDate: new Date().toISOString(),
+            modifiedDate: new Date().toISOString(),
+            countryId: 0,
+            stateId: 0,
+        });    
+
+        setErrors({});
     };
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // Basic validation (if needed, add more complex validation)
+    
         const newErrors = {};
-        if (!formData.shopName) newErrors.shopName = 'Shop Name is required.';
-        if (!formData.contactDetails) {
-            newErrors.contactDetails = 'Contact Number is required.';
-        } else if (formData.contactDetails && !/^\d{10}$/.test(formData.contactDetails)) {
-            newErrors.contactDetails = 'Contact number must be exactly 10 digits.';
+    
+        if (!formData.shopName.trim()) newErrors.shopName = "Shop Name is required";
+    
+        if (!formData.contactDetails.trim()) {
+            newErrors.contactDetails = "Phone Number are required";
+        } else if (!/^\d{10}$/.test(formData.contactDetails)) {
+            newErrors.contactDetails = "Phone Number must be exactly 10 digits";
         }
-        if (!formData.city) newErrors.city = 'City is required.';
-        if (!formData.taxId) newErrors.taxId = 'Tax Id is required.';
-        if (!formData.registrationNumber) newErrors.registrationNumber = 'Registration Number is required.';
-        if (!formData.address) newErrors.address = 'Address is required.';
-        if (!formData.gstNumber) newErrors.gstNumber = 'GST Number is required.';
-        if (!formData.countryId) newErrors.countryId = 'Country is required.';
-        if (!formData.stateId) newErrors.stateId = 'State is required.';
-
+    
+        if (!formData.taxId.trim()) newErrors.taxId = "Tax Id is required";
+        if (!formData.registrationNumber.trim()) newErrors.registrationNumber = "Registration Number is required";
+        if (!formData.address.trim()) newErrors.address = "Address is required";
+    
+        if (!formData.city.trim()) {
+            newErrors.city = "City is required";
+        } else if (!/^[A-Za-z\s]+$/.test(formData.city)) {
+            newErrors.city = "City must contain only alphabetic characters";
+        }
+    
+        if (!formData.countryId) newErrors.countryId = "Country is required";
+        if (!formData.stateId) newErrors.stateId = "State is required";
+        if (!formData.gstNumber) newErrors.gstNumber = "GST Number is required";
+    
+        if (!formData.postalCode) {
+            newErrors.postalCode = "Postal Code is required";
+        } else if (!/^\d{6}$/.test(formData.postalCode)) {
+            newErrors.postalCode = "Postal Code must be exactly 6 digits";
+        }
+        if (!formData.imageUrl) {
+            newErrors.imageUrl = "Image is required";
+        }
+        
+    
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
-            return; // Return early if there are validation errors
+            return;
         }
-
-        // Prepare the data to be sent in the request body
-        const payload = {
-            ...formData,
-            userId,
-            activeStatus: true,
-            createdDate: new Date().toISOString(),
-            modifiedDate: new Date().toISOString()
-        };
-
+    
         try {
             const response = await fetch(`${API_URL}/api/public/vendor/add`, {
-                method: 'POST',
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json",
                 },
-                body: JSON.stringify(payload),
+                body: JSON.stringify(formData),
             });
-
+    
             if (!response.ok) {
-                throw new Error('Failed to create vendor');
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Failed to create vendor");
             }
-
-            // Clear form data after successful submission
+    
             setFormData({
-                shopName: '',
-                contactDetails: '',
-                taxId: '',
-                registrationNumber: '',
-                city: '',
-                address: '',
-                gstNumber: '',
-                countryId: '',
-                stateId: ''
+                id: 0,
+                imageUrl: null,
+                shopName: "",
+                contactDetails: "",
+                taxId: "",
+                registrationNumber: "",
+                activeStatus: true,
+                address: "",
+                city: "",
+                gstNumber: "",
+                userId: 0,
+                postalCode: "",
+                createdDate: new Date().toISOString(),
+                modifiedDate: new Date().toISOString(),
+                countryId: 0,
+                stateId: 0,
             });
-
+    
             alert("Vendor registered successfully!");
-
-            // Redirect to profile page on successful submission
             router.push("/pages/Profile");
-
         } catch (error) {
-            console.error('Error creating vendor:', error);
-            setErrors({ form: 'Error submitting the form. Please try again later.' });
+            console.error("Error creating vendor:", error);
+            if (error.response && error.response.status === 409) {
+                alert("The email or phone number already exists. Please use a different one.");
+            } else {
+                alert("An error occurred while saving the vendor.");
+            }
         }
     };
+    
 
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        setFormData((prevState) => ({
+          ...prevState,
+          image: file,
+          imageUrl: URL.createObjectURL(file),
+        }));
+      };
+    
+      const handleRemoveImage = () => {
+        if (formData.imageUrl) {
+            URL.revokeObjectURL(formData.imageUrl);
+        }
+    
+        setFormData((prevData) => ({ ...prevData, imageUrl: "", image: null }));
+    
+        document.getElementById('imageInput').value = '';
+    };
+    
     return (
         <div className='vendorpage'>
             <div className='vendorpage-container'>
                 <div className='vendorpage-contents'>
                     <div className='vendorpage-head'>
-                        <h2>Become a Vendor</h2>
+                        <h2>Register a Vendor</h2>
                     </div>
                     <div className='pet-page-contents'>
                         <div className='pet-page-content'>
-                            <form onSubmit={handleSubmit}>
-                                <div className='content1-form'>
-                                    {errors.form && <span className="error-text">{errors.form}</span>}
-                                    <div className='content1-form-inputs'>
-                                        <div className="form2">
-                                            <label>Shop Name</label>
-                                            <input
-                                                className="content-input"
-                                                name="shopName"
-                                                type="text"
-                                                placeholder="Enter shop name"
-                                                value={formData.shopName}
-                                                onChange={handleInputChange}
-                                            />
-                                            {errors.shopName && <span className="error-text">{errors.shopName}</span>}
-                                        </div>
-                                        <div className="form2">
-                                            <label>Contact Number</label>
-                                            <input
-                                                className="content-input"
-                                                name="contactDetails"
-                                                placeholder="Enter contact number"
-                                                value={formData.contactDetails}
-                                                onChange={handleInputChange}
-                                            />
-                                            {errors.contactDetails && <span className="error-text">{errors.contactDetails}</span>}
-                                        </div>
+                        <form onSubmit={handleSubmit}>
+                            <div className='content1-form'>
+                                {errors.form && <span className="error-text">{errors.form}</span>}
+                                
+                                <div className='content1-form-inputs'>
+                                    <div className="form2">
+                                        <label>Shop Name:</label>
+                                        <input
+                                            name="shopName"
+                                            value={formData.shopName}
+                                            onChange={handleInputChange}
+                                            maxLength={100}
+                                            className={`content-input ${errors.shopName ? "error" : ""}`}
+                                        />
+                                        {errors.shopName && <p className="error">{errors.shopName}</p>}
                                     </div>
-                                    <div className='content1-form-inputs'>
-                                        <div className="form2">
-                                            <label>Tax Id</label>
-                                            <input
-                                                className="content-input"
-                                                name="taxId"
-                                                placeholder="Enter tax id"
-                                                value={formData.taxId}
-                                                onChange={handleInputChange}
-                                            />
-                                            {errors.taxId && <span className="error-text">{errors.taxId}</span>}
-                                        </div>
-                                        <div className="form2">
-                                            <label>Registration Number</label>
-                                            <input
-                                                className="content-input"
-                                                name="registrationNumber"
-                                                placeholder="Enter reg number"
-                                                value={formData.registrationNumber}
-                                                onChange={handleInputChange}
-                                            />
-                                            {errors.registrationNumber && <span className="error-text">{errors.registrationNumber}</span>}
-                                        </div>
-                                    </div>
-                                    <div className='content1-form-inputs'>
-                                        <div className="form2">
-                                            <label>City</label>
-                                            <input
-                                                className="content-input"
-                                                name="city"
-                                                placeholder="Enter city"
-                                                value={formData.city}
-                                                onChange={handleInputChange}
-                                            />
-                                            {errors.city && <span className="error-text">{errors.city}</span>}
-                                        </div>
-                                        <div className="form2">
-                                            <label>Address</label>
-                                            <input
-                                                className="content-input"
-                                                name="address"
-                                                placeholder="Enter Address"
-                                                value={formData.address}
-                                                onChange={handleInputChange}
-                                            />
-                                            {errors.address && <span className="error-text">{errors.address}</span>}
-                                        </div>
-                                    </div>
-                                    <div className='content1-form-inputs'>
-                                        <div className="form2">
-                                            <label>GST Number</label>
-                                            <input
-                                                className="content-input"
-                                                name="gstNumber"
-                                                placeholder="Enter GST Number"
-                                                value={formData.gstNumber}
-                                                onChange={handleInputChange}
-                                            />
-                                            {errors.gstNumber && <span className="error-text">{errors.gstNumber}</span>}
-                                        </div>
-                                        <div className="form2">
-                                            <label>Country</label>
-                                            <select
-                                                name="countryId"
-                                                value={formData.countryId}
-                                                onChange={handleInputChange}
-                                                className={`content-input ${errors.countryId ? 'error' : ''}`}
-                                            >
-                                                <option value="">Select Country</option>
-                                                {countryData.map((country) => (
-                                                    <option key={country.id} value={country.id}>
-                                                        {country.countryName}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            {errors.countryId && <span className="error-text">{errors.countryId}</span>}
-                                        </div>
-                                    </div>
-                                    <div className='content1-form-inputs'>
-                                        <div className="form2">
-                                            <label>State</label>
-                                            <select
-                                                name="stateId"
-                                                value={formData.stateId}
-                                                onChange={handleInputChange}
-                                                className={`content-input ${errors.stateId ? 'error' : ''}`}
-                                            >
-                                                <option value="">Select State</option>
-                                                {stateData
-                                                    .filter((state) => state.countryId === parseInt(formData.countryId))
-                                                    .map((state) => (
-                                                        <option key={state.id} value={state.id}>
-                                                            {state.stateName}
-                                                        </option>
-                                                    ))}
-                                            </select>
-                                            {errors.stateId && <span className="error-text">{errors.stateId}</span>}
-                                        </div>
-                                    </div>
-                                    <div className="btn-container">
-                                        <div className='content-btn'>
-                                            <button type="button" className="cancel-btn" onClick={handleCancel}>
-                                                Cancel
-                                            </button>
-                                            <button type="submit" className="update-btn">
-                                                Submit
-                                            </button>
-                                        </div>
+                                    <div className="form2">
+                                        <label>Phone Number:</label>
+                                        <input
+                                            name="contactDetails"
+                                            value={formData.contactDetails}
+                                            onChange={handleInputChange}
+                                            maxLength={10}
+                                            className={`content-input ${errors.contactDetails ? "error" : ""}`}
+                                        />
+                                        {errors.contactDetails && <p className="error">{errors.contactDetails}</p>}
                                     </div>
                                 </div>
-                            </form>
+                                
+                                <div className='content1-form-inputs'>
+                                    <div className="form2">
+                                        <label>Tax ID:</label>
+                                        <input
+                                            name="taxId"
+                                            value={formData.taxId}
+                                            onChange={handleInputChange}
+                                            maxLength={50}
+                                            className={`content-input ${errors.taxId ? "error" : ""}`}
+                                        />
+                                        {errors.taxId && <p className="error">{errors.taxId}</p>}
+                                    </div>
+                                    <div className="form2">
+                                        <label>Registration Number:</label>
+                                        <input
+                                            name="registrationNumber"
+                                            value={formData.registrationNumber}
+                                            onChange={handleInputChange}
+                                            maxLength={50}
+                                            className={`content-input ${errors.registrationNumber ? "error" : ""}`}
+                                        />
+                                        {errors.registrationNumber && <p className="error">{errors.registrationNumber}</p>}
+                                    </div>
+                                </div>
+                                
+                                <div className='content1-form-inputs'>
+                                    <div className="form2">
+                                        <label>City:</label>
+                                        <input
+                                            name="city"
+                                            value={formData.city}
+                                            onChange={handleInputChange}
+                                            maxLength={50}
+                                            className={`content-input ${errors.city ? "error" : ""}`}
+                                        />
+                                        {errors.city && <p className="error">{errors.city}</p>}
+                                    </div>
+                                    <div className="form2">
+                                        <label>Address:</label>
+                                        <input
+                                            name="address"
+                                            value={formData.address}
+                                            onChange={handleInputChange}
+                                            maxLength={200}
+                                            className={`content-input ${errors.address ? "error" : ""}`}
+                                        />
+                                        {errors.address && <p className="error">{errors.address}</p>}
+                                    </div>
+                                </div>
+                                
+                                <div className='content1-form-inputs'>
+                                    <div className="form2">
+                                        <label>GST Number:</label>
+                                        <input
+                                            name="gstNumber"
+                                            value={formData.gstNumber}
+                                            onChange={handleInputChange}
+                                            maxLength={50}
+                                            className={`content-input ${errors.gstNumber ? "error" : ""}`}
+                                        />
+                                        {errors.gstNumber && <p className="error">{errors.gstNumber}</p>}
+                                    </div>
+                                    <div className="form2">
+                                        <label>Postal Code:</label>
+                                        <input
+                                            name="postalCode"
+                                            value={formData.postalCode}
+                                            onChange={handleInputChange}
+                                            maxLength={10}
+                                            className={`content-input ${errors.postalCode ? "error" : ""}`}
+                                        />
+                                        {errors.postalCode && <p className="error">{errors.postalCode}</p>}
+                                    </div>
+                                </div>
+                                
+                                <div className='content1-form-inputs'>
+                                    <div className="form2">
+                                        <label>Country:</label>
+                                        <select
+                                            name="countryId"
+                                            value={formData.countryId}
+                                            onChange={handleInputChange}
+                                            className={`content-input ${errors.countryId ? 'error' : ''}`}
+                                        >
+                                            <option value="">Select Country</option>
+                                            {countryData.map((country) => (
+                                                <option key={country.id} value={country.id}>{country.countryName}</option>
+                                            ))}
+                                        </select>
+                                        {errors.countryId && <p className="error">{errors.countryId}</p>}
+                                    </div>
+                                    <div className="form2">
+                                        <label>State:</label>
+                                        <select
+                                            name="stateId"
+                                            value={formData.stateId}
+                                            onChange={handleInputChange}
+                                            className={`content-input ${errors.stateId ? 'error' : ''}`}
+                                        >
+                                            <option value="">Select State</option>
+                                            {stateData
+                                                .filter(state => state.countryId === parseInt(formData.countryId))
+                                                .map(state => (
+                                                    <option key={state.id} value={state.id}>{state.stateName}</option>
+                                                ))}
+                                        </select>
+                                        {errors.stateId && <p className="error">{errors.stateId}</p>}
+                                    </div>
+                                </div>
+
+                                <div className="content1-form-inputs">
+                                    <div className="form4">
+                                    <label>
+                                        Add Image<span className="error">*</span>
+                                    </label>
+                                    <div className="image-upload">
+                                        <input
+                                        type="file"
+                                        accept=".jpg,.jpeg,.png"
+                                        className="content-input-img"
+                                        onChange={handleFileChange}
+                                        id="imageInput"
+                                        />
+                                    </div>
+
+                                    {errors.imageUrl && <span className="error-text">{errors.imageUrl}</span>}
+
+                                    {formData.imageUrl && (
+                                        <div className="image-preview">
+                                        <img
+                                            src={formData.imageUrl}
+                                            alt="Preview"
+                                            style={{ width: "150px", height: "100px", marginTop: "10px" }}
+                                        />
+                                        <MdDeleteForever
+                                            className="delete-icon"
+                                            style={{ cursor: "pointer", color: "red", marginLeft: "10px" }}
+                                            onClick={handleRemoveImage}
+                                        />
+                                        </div>
+                                    )}
+                                    </div>
+                                </div>
+                                
+                                <div className="btn-container">
+                                    <div className='content-btn'>
+                                        <button type="button" className="cancel-btn" onClick={handleCancel}>Cancel</button>
+                                        <button type="submit" className="update-btn">Submit</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+
                         </div>
                     </div>
                 </div>

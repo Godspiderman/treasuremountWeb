@@ -1,4 +1,5 @@
 "use client";
+
 import React from "react"; 
 import { RiWhatsappFill } from "react-icons/ri";
 import { FaFacebook } from "react-icons/fa";
@@ -10,9 +11,27 @@ import { FaLocationDot } from "react-icons/fa6";
 import { FaPhoneAlt } from "react-icons/fa";
 import { MdOutlineMailOutline } from "react-icons/md";
 import Link from "next/link";
+import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import { setActiveSection } from "@/app/redux/slices/searchSlice";
+import LanguageSelector from "@/app/utils/LanguageSelector/LanguageSelector";
  
-    const Footer = () => {
-     
+const Footer = () => {
+  const isAuthenticated = useSelector((state) => state.auth?.isAuthenticated);
+
+    const dispatch = useDispatch();
+    const router = useRouter();
+
+    const navigateToSection = (section) => {
+        if (!isAuthenticated) {
+            router.push("/pages/Login");
+            return;
+          }
+        dispatch(setActiveSection(section));
+        router.push('/pages/Profile');
+
+      };
+
     return (
         <>
         <div className="footerContainer">
@@ -20,10 +39,8 @@ import Link from "next/link";
                 <div className="footerLogo">
                     <img src="/image/26 copy.png" alt="Logo" />
                 </div>
-                <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod
-                    
-                </p>
+                <p>Your trusted pet shop for healthy pets, quality
+                       pet products, and hassle-free veterinary booking.</p>
                 <div className="footerIcons">
                     <RiWhatsappFill />
                     <FaFacebook />
@@ -42,14 +59,20 @@ import Link from "next/link";
                     <Link href="/pages/Products" className="footer-list-item"><MdKeyboardDoubleArrowRight /> Products</Link>
                     <Link href="/pages/Shop" className="footer-list-item"><MdKeyboardDoubleArrowRight /> Shop</Link>
                     <Link href="/pages/Blog" className="footer-list-item"><MdKeyboardDoubleArrowRight /> Blog</Link>
+             
                 </div>
           
             </div>
 
             <div className="recent-detail">
-                <h3>Recent</h3>
-                <p>Lorem ipsum dolor sit amet dolor sit amet</p>
-           
+                <h3>Other Links</h3>
+                <div className="footer-lists">
+                    <span  onClick={() => navigateToSection("add-pets")} className="footer-list-item"><MdKeyboardDoubleArrowRight /> Sell Your Pets</span>
+                    <span onClick={() => navigateToSection("become-vendor")} className="footer-list-item"><MdKeyboardDoubleArrowRight /> Vendor Register</span>
+                    <span onClick={() => navigateToSection("order-history")} className="footer-list-item"><MdKeyboardDoubleArrowRight /> Order History</span>
+                    <span onClick={() => navigateToSection("booked-appointment")} className="footer-list-item"><MdKeyboardDoubleArrowRight /> Appointments History</span>
+              
+                </div>
             </div>
 
             <div className="contacts">
@@ -63,7 +86,7 @@ import Link from "next/link";
                     <div className="address-details">
                         <div className="address-info">
                             <p className="address-head">Our Location</p>
-                            <p className="address-head">Lorem ipsum dolor sit amet</p>
+                            <p className="address-head">Chennai, Tamil Nadu</p>
                         </div>
 
                     </div>
@@ -71,7 +94,7 @@ import Link from "next/link";
 
                 <div className="address">
                     <div className="address-icon">
-                    <FaPhoneAlt />
+                      <FaPhoneAlt />
                     </div>
 
                     <div className="address-details">
@@ -90,18 +113,19 @@ import Link from "next/link";
                     <div className="address-details">
                         <div className="address-info">
                             <p className="address-head">Our Email</p>
-                            <p className="address-head">garden@gmail.com</p>
+                            <p className="address-head">treasuremount@gmail.com</p>
                         </div>
                     </div>
-                </div>
 
+                </div>
+                <LanguageSelector />
 
             </div>
         
         </div>
 
         <div className="footer-buttom">
-            <p>&copy; 2024 Treasuremount. All rights reserved.</p>
+            <p>&copy; 2025 Treasuremount. All rights reserved.</p>
         </div>
         
     </>

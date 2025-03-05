@@ -29,14 +29,9 @@
                     border-radius: 5px;
                     color: white;
                     background-color: var(--btn-background-color);
-                    opacity: 0.6;
-                    transition: 0.3s;
                     @media (max-width : 500px) {
                         font-size: 0.8rem;
                         }
-                    &:hover {
-                        opacity: 1;
-                    }
                     p{
                         color: #FFFFFF;
                         display: inline;
@@ -81,12 +76,28 @@
         .custom-table {
             background-color: #ffffff;
             font-size: 0.9rem;
-            width: 100%;
+           // width: 100%;
             border-collapse: collapse;
             margin: 10px 0;
             border: none;
             padding: 10px;
             overflow: auto;
+
+            @media (min-width: 768px) {
+              width: 100%;
+            }
+
+            .text-center {
+              text-align: center !important;
+            }
+            
+            .text-left {
+              text-align: left !important;
+            }
+            
+            .text-right {
+              text-align: right !important;
+            }
           
             thead {
               padding: 10px;
@@ -94,6 +105,7 @@
           
               tr {
                 text-align: justify;
+                
           
                 th {
                   color:  #ffffff;
@@ -130,11 +142,75 @@
                   }
           
                   p {
-                    width: 150px;
+                    width: 80px;
                     margin: 0 auto;
                     padding: 2px;
                     border-radius: 50px;
                     text-align: center;
+                    
+                  }
+
+                  .status-pending {
+                    color: #ffffff;
+                    background-color: #ff9900;
+                    padding: 7px;
+                    border-radius: 10px;
+                  }
+                  
+                  .status-confirmed {
+                    color: #ffffff;
+                    background-color: #009900;
+                    padding: 7px;
+                    border-radius: 10px;
+                  }
+                  
+                  .status-packaging {
+                    color: #ffffff;
+                    background-color: #9933ff;
+                    padding: 7px;
+                    border-radius: 10px;
+                  }
+                  
+                  .status-shipped {
+                    color: #ffffff;
+                    background-color: #009900;
+                    padding: 7px;
+                    border-radius: 10px;
+                  }
+                  
+                  .status-outfordelivery {
+                    color: #ffffff;
+                    background-color: #ff6600;
+                    padding: 7px;
+                    border-radius: 10px;
+                  }
+                  
+                  .status-delivered {
+                    color: #ffffff;
+                    background-color: #33cc33;
+                    padding: 7px;
+                    border-radius: 10px;
+                  }
+                  
+                  .status-cancelled {
+                    color: #ffffff;
+                    background-color: #cc0000;
+                    padding: 7px;
+                    border-radius: 10px;
+                  }
+                  
+                  .status-returned {
+                    color: #ffffff;
+                    background-color: #663300;
+                    padding: 7px;
+                    border-radius: 10px;
+                  }
+                  
+                  .status-refunded {
+                    color: #ffffff;
+                    background-color: #00cccc;
+                    padding: 7px;
+                    border-radius: 10px;
                   }
           
                   .description {
@@ -176,6 +252,8 @@
                       }
                     }
                   }
+
+                 
           
                   .icons {
                     color: #ffffff;
@@ -216,6 +294,7 @@
             th,
             td {
               border: none;
+              
             }
           }
     }

@@ -2,7 +2,7 @@
    
     width: 85%;
     margin: 0 auto;
-  margin-bottom: 10px;
+    margin-bottom: 10px;
     @media (max-width: 1024px) {
 
     }
@@ -14,7 +14,7 @@
     .shoppage-Container {
       .shoppage-Head {
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
   
         .shoppage-Head-Container {
@@ -31,11 +31,13 @@
             }
   
             @media (max-width: 768px) {
-              font-size: 1.5rem;
+              font-size: 2rem;
+              text-align: center;
             }
   
             @media (max-width: 400px) {
-              font-size: 1.2rem;
+              font-size: 2.5rem;
+              text-align: center;
             }
           }
   
@@ -46,6 +48,7 @@
   
             @media (max-width: 400px) {
               font-size: 1rem;
+              text-align: center;
             }
           }
         }
@@ -384,8 +387,7 @@
       .cards-Container {
         display: flex;
         flex-wrap: wrap;
-        gap: 1rem;
-        // justify-content: space-between; 
+        gap: 30px;
     
         .card {
           width: 100%; 
@@ -396,11 +398,44 @@
           overflow: hidden;
           transition: all 0.3s ease-in-out;
           cursor: pointer;
+
+
+          .card-Details {
+            .card-Title {
+              font-size: 18px;
+              font-weight: bold;
+              margin-bottom: 12px;
+            }
+          
+            .details {
+              display: flex;
+              // align-items: center;
+              margin-bottom: 10px;
+              
+              h5 {
+                font-size: 15px;
+                font-weight: 600;
+                margin: 0;
+                color: #383737;
+              }
+          
+              p {
+                font-size: 14px;
+                color: #4e4d4d;
+                margin: 0;
+                padding-left: 15px;
+                //word-wrap: break-word;
+              }
+            }
+          }
+          
+
           .product-card-img{
             position: relative;
             width: 100%;
             height: auto;
             overflow: hidden;
+            object-fit: cover;
             border-radius: 10px 10px 0 0;
            
       
@@ -410,6 +445,7 @@
               height: 250px;
               border-radius: 10px 10px 0 0;
               transition: all 0.5s ease;
+              object-fit: cover;
             }
             
             .hover-img {

@@ -10,8 +10,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { API_URL } from "@/app/services/useAxiosInstance";
+import { FaArrowRight } from "react-icons/fa";
 
-import { incrementCartCount } from '@/app/redux/slices/cartSlice'; 
+import { incrementCartCount } from '@/app/redux/slices/cartSlice';
 
 const PetDetails = () => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -19,8 +20,9 @@ const PetDetails = () => {
 
   const [petDetails, setPetDetails] = useState("");
   const [foodDetails, setFoodDetails] = useState("");
+  const [animalDetails, setAnimalDetails] = useState("");
   const [accessoriesDetails, setAccessoriesDetails] = useState("");
-  const[medicineDetails,setMedicineDetails]=useState("");
+  const [medicineDetails, setMedicineDetails] = useState("");
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
@@ -30,6 +32,7 @@ const PetDetails = () => {
   console.log("productId from params:", productId);
   console.log("categoryId from params:", categoryId);
 
+
   const userId = useSelector((state) => state.auth.user?.userId || null);
   // const userId = 2;
   console.log("userId", userId);
@@ -37,6 +40,17 @@ const PetDetails = () => {
   //contact Page
 
   const [showContainer, setShowContainer] = useState(false);
+
+  useEffect(() => {
+
+    const queryParams = new URLSearchParams(window.location.search);
+    const showContainerParam = queryParams.get("showContainer");
+
+
+    if (showContainerParam === "true") {
+      setShowContainer(true);
+    }
+  }, []);
   const [formData, setFormData] = useState({
     firstName: "",
     shopName: "",
@@ -90,6 +104,34 @@ const PetDetails = () => {
     setShowContainer(true);
   };
 
+  //relevant products
+
+  const [relevantProducts, setRelevantProducts] = useState([]);
+
+  useEffect(() => {
+    if (!productId) return;
+
+    const fetchRelevantProducts = async () => {
+      try {
+        const response = await fetch(
+          `${API_URL}/api/public/product/getRelevantProduct?ProductId=${productId}`,
+          { cache: "no-store" }
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
+        const data = await response.json();
+        console.log("Fetched Relevant Products:", data);
+        setRelevantProducts(data);
+      } catch (err) {
+        console.log("no data");
+      }
+    };
+
+    fetchRelevantProducts();
+  }, [productId]);
+
+
   const dispatch = useDispatch();
   const [images, setImages] = useState([]);
   const [mainImage, setMainImage] = useState(images[0]?.imageUrls);
@@ -114,6 +156,25 @@ const PetDetails = () => {
     fetchPetsDetails();
   }, [categoryId, productId]);
 
+
+  useEffect(() => {
+    const fetchPetsDetails = async () => {
+      dispatch(startLoading());
+      try {
+        const response = await fetch(
+          `${API_URL}/api/public/resource/pet/getOne/${productId}`
+        );
+        const data = await response.json();
+        console.log(data);
+        setAnimalDetails(data);
+        dispatch(stopLoading());
+      } catch (error) {
+      }
+    };
+
+    fetchPetsDetails();
+  }, [categoryId, productId]);
+
   useEffect(() => {
     const fetchFoodDetails = async () => {
       dispatch(startLoading());
@@ -123,7 +184,7 @@ const PetDetails = () => {
         );
         const data = await response.json();
         setFoodDetails(data);
-        setStockQuantity(data.stockQuantity); 
+        setStockQuantity(data.stockQuantity);
         console.log("Stock Quantity:", data.stockQuantity);
         console.log(data);
         dispatch(stopLoading());
@@ -144,7 +205,7 @@ const PetDetails = () => {
         );
         const data = await response.json();
         setAccessoriesDetails(data);
-        setStockQuantity(data.stockQuantity); 
+        setStockQuantity(data.stockQuantity);
         console.log("Stock Quantity:", data.stockQuantity);
         dispatch(stopLoading());
         console.log(data);
@@ -173,10 +234,10 @@ const PetDetails = () => {
         // Handle error
       }
     };
-  
+
     fetchMedicineDetails();
   }, [categoryId, productId]);
-  
+
 
 
   useEffect(() => {
@@ -225,7 +286,7 @@ const PetDetails = () => {
       });
     }, 5000);
 
-    return () => clearInterval(interval); 
+    return () => clearInterval(interval);
   }, [images, isReversing, mainImage]);
 
   const handleImageClick = (imageUrl, index) => {
@@ -235,8 +296,8 @@ const PetDetails = () => {
   };
 
   const [stockQuantity, setStockQuantity] = useState(0);
-  const [count, setCount] = useState(1); 
-  
+  const [count, setCount] = useState(1);
+
 
   const increment = () => {
     console.log("Stock Quantity:", stockQuantity, "Current Count:", count);
@@ -246,9 +307,9 @@ const PetDetails = () => {
       alert("Maximum quantity reached.");
     }
   };
-  
+
   const decrement = () => {
-    console.log("Stock Quantity:", stockQuantity, "Current Count:", count); 
+    console.log("Stock Quantity:", stockQuantity, "Current Count:", count);
     if (count > 1) {
       setCount((prevCount) => prevCount - 1);
     } else {
@@ -260,54 +321,54 @@ const PetDetails = () => {
   const handleAddToWishlist = async () => {
     if (count > stockQuantity) {
       alert("You cannot add more than the available stock.");
-      return; 
+      return;
     }
-  
+
     const formData = {
       userId: userId,
       productId: productId,
       initialQuantity: count,
     };
-  
+
     console.log("Parameters being sent:", formData);
-  
+
     try {
       // Check if the product is already in the cart
       const checkResponse = await fetch(
         `${API_URL}/cart/getOne?ProductId=${productId}&userId=${userId}`
       );
-  
+
       if (!checkResponse.ok) {
         throw new Error(`Error: ${checkResponse.status} - ${checkResponse.statusText}`);
       }
-  
+
       const checkData = await checkResponse.text();
       const parsedData = checkData ? JSON.parse(checkData) : null;
-  
+
       if (parsedData) {
         const newQuantity = parsedData.quantity + count;
-  
+
         if (newQuantity > stockQuantity) {
           alert("Cannot add more than the available stock in the cart.");
-          return; 
+          return;
         }
-  
+
         const increaseQuantityResponse = await fetch(
           `${API_URL}/cart/addQuantity/${parsedData.id}?incrementBy=${newQuantity}`,
           {
-            method: "PATCH",  
+            method: "PATCH",
           }
         );
-  
+
         if (!increaseQuantityResponse.ok) {
           throw new Error(`Error: ${increaseQuantityResponse.status} - ${increaseQuantityResponse.statusText}`);
         }
-  
+
         const increaseData = await increaseQuantityResponse.text();
         console.log("Quantity increased:", increaseData);
         dispatch(incrementCartCount(count));
         alert("Product quantity updated in cart!");
-     
+
       } else {
         const response = await fetch(`${API_URL}/cart/add`, {
           method: "POST",
@@ -316,36 +377,32 @@ const PetDetails = () => {
           },
           body: JSON.stringify(formData),
         });
-  
+
         if (!response.ok) {
           throw new Error(`Error: ${response.status} - ${response.statusText}`);
         }
-  
+
         const data = await response.text();
         console.log("Product added to cart:", data);
         dispatch(incrementCartCount(count));
-        alert("Product added to cart successfully!");    
-
+        alert("Product added to cart successfully!");
       }
- 
+
       router.push(`/pages/Cart/?count=${count}`);
     } catch (error) {
       console.error("Error:", error);
       alert(`Error: ${error.message}`);
     }
   };
-  
-  
+
+
   const handleOrder = (OneproductId, count) => {
     router.push(`/pages/Cart/PlaceOrder?productId=${OneproductId}&count=${count}`);
   }
 
 
-  const gotologin = () => {
-    router.push("/pages/Login");
-  };
-
   const [showForm, setShowForm] = useState(false);
+
 
   const [reviewData, setReviewData] = useState({
     id: 0,
@@ -356,41 +413,41 @@ const PetDetails = () => {
     isApproved: false,
     createdDate: new Date().toISOString(),
   });
-  
+
   const [errors, setErrors] = useState({
     rating: '',
     comments: ''
   });
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setReviewData((prevData) => ({ ...prevData, [name]: value }));
-  
+
     // Hide errors while typing if input is valid
     if (name === 'rating' && (value >= 1 && value <= 5)) {
       setErrors(prevErrors => ({ ...prevErrors, rating: '' }));
     }
-  
+
     if (name === 'comments' && value.length <= 500) {
       setErrors(prevErrors => ({ ...prevErrors, comments: '' }));
     }
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const validationErrors = {};
-  
+
     if (!reviewData.rating || reviewData.rating < 1 || reviewData.rating > 5) {
       validationErrors.rating = 'Rating must be between 1 and 5.';
     }
-  
+
     if (!reviewData.comments) {
       validationErrors.comments = 'Comments cannot be empty.';
     } else if (reviewData.comments.length > 500) {
       validationErrors.comments = 'Comments cannot exceed 500 characters.';
     }
-  
+
     if (Object.keys(validationErrors).length === 0) {
       const payload = {
         id: 0,
@@ -401,26 +458,26 @@ const PetDetails = () => {
         isApproved: false,
         createdDate: new Date().toISOString(),
       };
-  
+
       try {
-        const response = await fetch("http://localhost:8080/api/public/reviews/add", {
+        const response = await fetch(`${API_URL}/api/public/reviews/add`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
         });
-  
+
         if (!response.ok) {
           throw new Error("Failed to submit review");
         }
-  
+
         const data = await response.json();
-  
+
         alert("Review submitted successfully!");
         setReviewData({ ...reviewData, rating: "", comments: "" });
         setShowForm(false);
-  
+
       } catch (error) {
         console.error("Error submitting review:", error);
         alert(error.message || "An error occurred while submitting.");
@@ -429,40 +486,44 @@ const PetDetails = () => {
       setErrors(validationErrors);
     }
   };
-  
-  
+
 
   const [reviews, setReviews] = useState([]);
 
+
   useEffect(() => {
     const fetchReviews = async () => {
+      setLoading(true);
       try {
-        const response = await fetch(`${API_URL}/api/public/reviews/getAll`);
+        const response = await fetch(`${API_URL}/api/public/reviews/v1/getAll?userId=0&productId=${productId}`);
         if (!response.ok) {
-          throw new Error("Failed to fetch reviews");
+          throw new Error("Failed to fetch reviews.");
         }
         const data = await response.json();
+        console.log(data);
 
-        const mappedReviews = data.map((review) => ({
-          id: review.id,
-          userName: `User ${review.userId}`,
-          date: new Date(review.createdDate).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          }),
-          rating: review.rating,
-          content: review.comments,
-          profileImage: "/image/reviewProfile.png",
-        }));
-        setReviews(mappedReviews);
-      } catch (error) {
-        console.error("Error fetching reviews:", error);
+        setReviews(data);
+      } catch (err) {
+        console.error("Error fetching reviews:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchReviews();
-  }, []);
+  }, [productId]);
+
+  const [visibleReviews, setVisibleReviews] = useState(3);
+
+  const handleShowMore = () => {
+    setVisibleReviews((prev) => prev + 3);
+  };
+
+  const handleShowLess = () => {
+    setVisibleReviews(3);
+  };
+
+
 
 
   return (
@@ -495,6 +556,15 @@ const PetDetails = () => {
                   </div>
                 )}
 
+                {animalDetails.categoryId === 7 && animalDetails.videoUrl && (
+                  <div key={animalDetails.id} className="thumbnail">
+                    <video controls className="thumbnail-image">
+                      <source src={animalDetails.videoUrl} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                )}
+
                 {foodDetails.categoryId === 2 && foodDetails.videoUrl && (
                   <div key={foodDetails.id} className="thumbnail">
                     <video controls className="thumbnail-image">
@@ -521,7 +591,6 @@ const PetDetails = () => {
                     </video>
                   </div>
                 )}
-
 
               </div>
 
@@ -551,6 +620,25 @@ const PetDetails = () => {
             </>
 
 
+            <>
+              {animalDetails.categoryId === 7 && (
+                <button
+                  className="toggle-button"
+                  onClick={(e) => {
+                    if (!isAuthenticated) {
+                      e.preventDefault();
+                      router.push("/pages/Login");
+                    } else {
+                      handleViewContactDetails();
+                    }
+                  }}
+                >
+                  CONTACT NOW
+                </button>
+              )}
+            </>
+
+
             {foodDetails.categoryId === 2 && (
               <div className="addCard">
                 <div className="addCardContent">
@@ -563,7 +651,7 @@ const PetDetails = () => {
                       <FaPlus />
                     </button>
                   </div>
-                  
+
                   <button
                     className="addWishList"
                     onClick={(e) => {
@@ -617,7 +705,7 @@ const PetDetails = () => {
                       <FaPlus />
                     </button>
                   </div>
-                  
+
                   <button
                     className="addWishList"
                     onClick={(e) => {
@@ -717,8 +805,12 @@ const PetDetails = () => {
           {petDetails.categoryId === 1 && (
             <div className="detailsSection1">
               <div className="detailsSectionHead">
+
                 <div className="detailsHead">
-                  <h2>{petDetails.breed}</h2>
+                  <div className="head">
+                    <h2>{petDetails.breed}</h2>
+                    <button className="go-back-btn" onClick={() => router.back()}>Back</button>
+                  </div>
                   <div className="rating">
                     <span>4.0</span>
                     {[...Array(4)].map((_, i) => (
@@ -784,11 +876,89 @@ const PetDetails = () => {
             </div>
           )}
 
+          {animalDetails.categoryId === 7 && (
+            <div className="detailsSection1">
+              <div className="detailsSectionHead">
+
+                <div className="detailsHead">
+                  <div className="head">
+                    <h2>{animalDetails.breed}</h2>
+                    <button className="go-back-btn" onClick={() => router.back()}>Back</button>
+                  </div>
+                  <div className="rating">
+                    <span>4.0</span>
+                    {[...Array(4)].map((_, i) => (
+                      <AiFillStar key={i} />
+                    ))}
+                    <span>20 Reviews</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="detailsSectionContent">
+                <h2>
+                  ₹{(animalDetails.productPrice - (animalDetails.productPrice * animalDetails.discount / 100)).toFixed(2)}
+                </h2>
+
+                <p>₹{animalDetails.productPrice.toFixed(2)}</p>
+              </div>
+
+              <hr />
+              <div className="petContent">
+                <p>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+                  eiusmod tempor incididunt ut labore dolore.
+                </p>
+              </div>
+              <div className="petContent">
+                <h2>Age: {animalDetails.ageMonths} Month</h2>
+                <h2>Color: {animalDetails.color}</h2>
+              </div>
+
+              <div className="petFeature">
+                <div className="petFeatureHead">
+                  <h2>Care Instructions</h2>
+                </div>
+                <div className="petFeatureContent">
+                  <p>{animalDetails.careInstructions}</p>
+                </div>
+              </div>
+              <div className="petFeature">
+                <div className="petFeatureHead">
+                  <h2>About Dog Baby</h2>
+                </div>
+                <div className="petFeatureContent">
+                  <p>{animalDetails.about}</p>
+                </div>
+              </div>
+              <div className="petFeature">
+                <div className="petFeatureHead">
+                  <h2>Health Info</h2>
+                </div>
+                <div className="petFeatureContent">
+                  <p>{animalDetails.healthInfo}</p>
+                </div>
+              </div>
+              <div className="petFeature">
+                <div className="petFeatureHead">
+                  <h2>Special Requirements</h2>
+                </div>
+                <div className="petFeatureContent">
+                  <p>{animalDetails.specialRequirements}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {foodDetails.categoryId === 2 && (
             <div className="detailsSection1">
               <div className="detailsSectionHead">
                 <div className="detailsHead">
-                  <h2>{foodDetails.brand}</h2>
+                  <div className="head">
+                    <h2>{foodDetails.brand}</h2>
+                    <button className="go-back-btn" onClick={() => router.back()}>Back</button>
+                  </div>
+
                   <div className="rating">
                     <span>4.0</span>
                     {[...Array(4)].map((_, i) => (
@@ -854,7 +1024,11 @@ const PetDetails = () => {
             <div className="detailsSection1">
               <div className="detailsSectionHead">
                 <div className="detailsHead">
-                  <h2>{accessoriesDetails.brand}</h2>
+                  <div className="head">
+                    <h2>{accessoriesDetails.brand}</h2>
+                    <button className="go-back-btn" onClick={() => router.back()}>Back</button>
+                  </div>
+
                   <div className="rating">
                     <span>4.0</span>
                     {[...Array(4)].map((_, i) => (
@@ -909,13 +1083,15 @@ const PetDetails = () => {
             </div>
           )}
 
-
-
           {medicineDetails.categoryId === 4 && (
             <div className="detailsSection1">
               <div className="detailsSectionHead">
                 <div className="detailsHead">
-                  <h2>{medicineDetails.productName}</h2>
+                  <div className="head">
+                    <h2>{medicineDetails.productName}</h2>
+                    <button className="go-back-btn" onClick={() => router.back()}>Back</button>
+                  </div>
+
                   <div className="rating">
                     <span>4.0</span>
                     {[...Array(4)].map((_, i) => (
@@ -985,10 +1161,6 @@ const PetDetails = () => {
         </div>
 
         <div className="contactpage">
-          {/* <button className="toggle-button" onClick={handleViewContactDetails}>
-            View Contact Details
-          </button> */}
-
           {showContainer && (
             <div className="contactpage-container">
               <div className="contactpage-contents">
@@ -1086,49 +1258,87 @@ const PetDetails = () => {
           )}
         </div>
 
-        <div className="reviewContainer">
-          
+        <div className="alsoLike">
+          <div className="alsoLikeHead">
+            <h2>You Might Also Like</h2>
+          </div>
 
+          <div className="alsoLikeContent">
+            <div className="tabCards">
+              {relevantProducts.length > 0 ? (
+                relevantProducts.map((product, index) => (
+                  <div className="tabCard" key={index}
+                    onClick={() => router.push(`/pages/PetDetails?productId=${product.id}&categoryId=${product.categoryId}`)}
+                  >
+                    <img src={product.imageUrl} alt={product.id} />
+
+                    <p>{product.productName}</p>
+                    <div className="tabPrice">
+
+                      <p className="offer-price">₹{(product.price - (product.price * product.discount / 100)).toFixed(2)} </p>
+                      <p className="price">₹{product.price.toFixed(2)} </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p>No relevant products available</p>
+              )}
+            </div>
+          </div>
+
+        </div>
+
+        <div className="reviewContainer">
           <h3>Reviews</h3>
           {reviews.length > 0 ? (
-            reviews.map((review, index) => (
-              <div key={review.id}>
-                <div className="reviewContent">
-                  <div className="reviewProfile">
-                    <img src={review.profileImage} width={55} height={90} alt="Profile" />
-                  </div>
-
-                  <div className="reviewDetails">
-                    <div className="userName">
-                      <h4>{review.userName}</h4>
-                      <p>{review.date}</p>
-                    </div>
-
-                    <div className="reviewRating">
-                      <div className="reviewStars">
-                        {[...Array(review.rating)].map((_, starIndex) => (
-                          <MdStarRate key={starIndex} />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+            reviews.slice(0, visibleReviews).map((review, index) => (
+              <div key={review.id} className="reviewContent">
+                <div className="reviewProfile">
+                  <img
+                    src={review.imageUrl}
+                    width={100}
+                    height={100}
+                    alt="Profile"
+                  />
                 </div>
-
-                <div className="reviewData">
-                  <p>{review.content}</p>
+                <div className="reviewDetails">
+                  <div className="userName">
+                    <h4>{review.userName}</h4>
+                    <p>{review.date}</p>
+                  </div>
+                  <div className="reviewRating">
+                    <div className="reviewStars">
+                      {[...Array(review.rating)].map((_, starIndex) => (
+                        <MdStarRate key={starIndex} />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="reviewData">
+                    <p>{review.comments}</p>
+                  </div>
                 </div>
               </div>
-
-
-            
-              
             ))
           ) : (
             <p>No reviews available.</p>
           )}
 
+          {/* Show More / Show Less Buttons */}
+          {reviews.length > 0 && (
+            <div className="review-buttons">
+              {visibleReviews < reviews.length ? (
+                <button className="show-more-button" onClick={handleShowMore}>
+                  Show More
+                </button>
+              ) : (
+                <button className="show-less-button" onClick={handleShowLess}>
+                  Show Less
+                </button>
+              )}
+            </div>
+          )}
 
-          <div className="add-review-container">
+          {/* <div className="add-review-container">
             {!showForm && (
               <button className="open-review-button" onClick={() => setShowForm(true)}>
                 Add Review
@@ -1178,54 +1388,13 @@ const PetDetails = () => {
                 </div>
               </div>
             )}
-          </div>
-
-
+          </div> */}
 
         </div>
 
 
-        {/* <div className="alsoLike">
-          <div className="alsoLikeHead">
-            <h2>You Might Also Like</h2>
-          </div>
-          <div className="alsoLikeContent">
-            <div className="tabCards">
-              <div className="tabCard">
-                <img src="/image/tap-1.png" alt="" />
-                <p>Simply Cat</p>
-                <div className="tabPrice">
-                  <p>$60.00 USD</p>
-                  <p>$60.00 USD</p>
-                </div>
-              </div>
-              <div className="tabCard">
-                <img src="/image/tap-2.png" alt="" />
-                <p>Simply Cat</p>
-                <div className="tabPrice">
-                  <p>$60.00 USD</p>
-                  <p>$60.00 USD</p>
-                </div>
-              </div>
-              <div className="tabCard">
-                <img src="/image/tap-3.png" alt="" />
-                <p>Simply Cat</p>
-                <div className="tabPrice">
-                  <p>$60.00 USD</p>
-                  <p>$60.00 USD</p>
-                </div>
-              </div>
-              <div className="tabCard">
-                <img src="/image/tap-4.png" alt="" />
-                <p>Simply Cat</p>
-                <div className="tabPrice">
-                  <p>$60.00 USD</p>
-                  <p>$60.00 USD</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div> */}
+
+
       </div>
     </div>
   );

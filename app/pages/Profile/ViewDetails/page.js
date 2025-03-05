@@ -1,19 +1,140 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
 import { API_URL } from "@/app/services/useAxiosInstance";
+import {useSelector } from "react-redux";
+import { IoClose } from "react-icons/io5";
+import { RiStarSFill } from "react-icons/ri";
+import { IoCallOutline } from "react-icons/io5";
+import { IoMailOutline } from "react-icons/io5";
+import { IoLocationOutline } from "react-icons/io5";
+import { FaRegUser } from "react-icons/fa6";
+import { useRouter } from "next/navigation";
+import "./ViewDetails.scss";
 
-const ViewDetails = () => {
+
+const ViewDetails = ({ order, onNavigate }) => {
   const [orderDetails, setOrderDetails] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState({ cancel: false, return: false });
-  const searchParams = useSearchParams();
-  const productId = searchParams.get("productId");
-  const orderId = searchParams.get("orderId");
-  const [cancelStatus, setCancelStatus] = useState(null); // { isApproved: boolean }
-  const [returnStatus, setReturnStatus] = useState(null); // { isApproved: boolean }
+  const productId = order?.productId;
+  const orderId = order?.orderId;
+  const router = useRouter();
+  
+  const [cancelStatus, setCancelStatus] = useState(null);
+  const [returnStatus, setReturnStatus] = useState(null); 
   const [productDetails, setProductDetails] = useState(null);
+
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [returnReason, setReturnReason] = useState("");
+
+  const [cancelError, setCancelError] = useState("");
+  const [returnError, setReturnError] = useState("");
+
+
+  
+
+  //review
+  
+  const userId = useSelector((state) => state.auth.user?.userId || null);
+
+  const [showForm, setShowForm] = useState(false);
+
+  const [reviewData, setReviewData] = useState({
+    id: 0,
+    userId: userId,
+    productId: productId,
+    rating: 0,
+    comments: "",
+    isApproved: false,
+    createdDate: new Date().toISOString(),
+  });
+  
+  const [errors, setErrors] = useState({
+    rating: '',
+    comments: ''
+  });
+
+  const handleStarClick = (selectedRating) => {
+   
+    setReviewData((prevData) => ({ ...prevData, rating: selectedRating }));
+  
+    if (selectedRating >= 1 && selectedRating <= 5) {
+      setErrors((prevErrors) => ({ ...prevErrors, rating: "" }));
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setReviewData((prevData) => ({ ...prevData, [name]: value }));
+  
+    if (name === 'comments' && value.length <= 500) {
+      setErrors(prevErrors => ({ ...prevErrors, comments: '' }));
+    }
+  };
+
+  const handleClear = () => {
+    // Reset rating and comments
+    setReviewData((prevData) => ({ ...prevData, rating: 0, comments: "" }));
+    setErrors({ rating: "", comments: "" });
+  };
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    const validationErrors = {};
+  
+    if (!reviewData.rating || reviewData.rating < 1 || reviewData.rating > 5) {
+      validationErrors.rating = "Please select a rating between 1 and 5 stars.";
+    }
+  
+    if (!reviewData.comments) {
+      validationErrors.comments = 'Comments cannot be empty.';
+    } else if (reviewData.comments.length > 500) {
+      validationErrors.comments = 'Comments cannot exceed 500 characters.';
+    }
+  
+    if (Object.keys(validationErrors).length === 0) {
+      const payload = {
+        id: 0,
+        userId: reviewData.userId,
+        productId: reviewData.productId,
+        rating: Number(reviewData.rating),
+        comments: reviewData.comments.trim(),
+        isApproved: true,
+        createdDate: new Date().toISOString(),
+      };
+  
+      try {
+        const response = await fetch("http://localhost:8080/api/public/reviews/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+  
+        if (!response.ok) {
+          throw new Error("Failed to submit review");
+        }
+  
+        const data = await response.json();
+  
+        alert("Review submitted successfully!");
+        setReviewData({ ...reviewData, rating: "", comments: "" });
+        setShowForm(false);
+  
+      } catch (error) {
+        console.error("Error submitting review:", error);
+        alert(error.message || "An error occurred while submitting.");
+      }
+    } else {
+      setErrors(validationErrors);
+    }
+  };
+
 
   useEffect(() => {
     if (!orderId) {
@@ -63,14 +184,13 @@ const ViewDetails = () => {
   }, [productId]);
 
 
-
   const handleReturnOrder = async () => {
     if (!orderDetails) return;
 
     const returnPayload = {
         id: 0,
         orderId: orderDetails.id,
-        returnReason: "User-requested return",
+        returnReason: returnReason,
         returnStatus: "Pending",
         requestedDate: new Date().toISOString(),
         approvedDate: null,
@@ -98,7 +218,6 @@ const ViewDetails = () => {
         const result = await response.json();
         console.log("Return API Response:", result);
 
-        // Fetch the return details using the id from the POST response
         fetchReturnDetails(result.id);
     } catch (err) {
         alert(`Error: ${err.message}`);
@@ -122,14 +241,13 @@ const fetchReturnDetails = async (returnId) => {
 };
 
 
-
 const handleCancelOrder = async () => {
   if (!orderDetails) return;
 
   const cancelPayload = {
       id: 0,
       orderId: orderDetails.id,
-      cancelReason: "User-requested cancellation",
+      cancelReason: cancelReason,
       cancelStatus: "Pending",
       requestedDate: new Date().toISOString(),
       approvedDate: null,
@@ -194,6 +312,37 @@ const isEligibleForReturn = () => {
 };
 
 
+const submitCancelOrder = () => {
+  if (!cancelReason.trim()) {
+    setCancelError("Reason is required");
+    return;
+  }
+  handleCancelOrder();
+  setShowCancelModal(false);
+  setCancelReason("");
+  alert("Cancel order submitted successfully");
+};
+
+const submitReturnOrder = () => {
+  if (!returnReason.trim()) {
+    setReturnError("Reason is required");
+    return;
+  }
+  handleReturnOrder();
+  setShowReturnModal(false);
+  setReturnReason("");
+  alert("Return order submitted successfully");
+};
+
+const handleBack = () => {
+    if (onNavigate) {
+      onNavigate("order-history");
+    }
+  };
+  // const handleBack = () => {
+  //   onNavigate("order-history"); 
+  // };
+
   if (error) {
     return <p>Error: {error}</p>;
   }
@@ -205,89 +354,343 @@ const isEligibleForReturn = () => {
   const { orderStatusId } = orderDetails;
 
   return (
-    <div className="viewDetails">
-      <div className="viewDetailsContainer">
-        
-        <div className="viewDetailsHead">
-         <h1>Order Details</h1>
-        </div>
+    <div className="view-order">
+      <div className="view-order-container box-shadow">
 
-        <div className="viewDetailsContent">
-          <div className="viewDetailsProduct">
-            <h4>Order Details :</h4>
-            <p><strong>User Name:</strong> {orderDetails.userName}</p>
-            <p><strong>Product Name:</strong> {orderDetails.productName}</p>
-            <p><strong>Unit Price:</strong> ₹ {orderDetails.unitPrice.toFixed(2)}</p>
-            <p><strong>Quantity:</strong> {orderDetails.quantity}</p>
-            
-            <p><strong>Total Amount:</strong> ₹ {orderDetails.totalAmount.toFixed(2)}</p>
-            <p><strong>Order Status:</strong> {orderDetails.orderStatusName}</p>
-            <p><strong>Order Date:</strong> {orderDetails.orderDate}</p>
-            <p><strong>Delivery Date:</strong> {orderDetails.deliveryDate}</p>
+        
+        <div className="view-order-head p-15">
+            <h2>Order Id:{orderDetails.uniqueId}</h2>
+
+            <div className="all-btns">
+      
+              <div className="btns">
+
+                <div className="add-review-container">
+                  {orderStatusId === 6 && !showForm && (
+                    <button className="open-review-button" onClick={() => setShowForm(true)}>
+                      Add Review
+                    </button>
+                  )}
+
+                  {showForm && (
+                    <div className="reviewpage-overlay">
+                      <div className="reviewpage-contents">
+                        <div className="reviewpage-head">
+                          <h2>Add Review</h2>
+                          <button
+                            className="close-review-button"
+                            onClick={() => {
+                              setShowForm(false);
+                              setErrors({ rating: "", comments: "" });
+                            }}
+                          >
+                            <IoClose />
+                          </button>
+                        </div>
+
+                        <div className="reviewpage-content">
+                          <form onSubmit={handleSubmit} className="reviewpage-form">
+                            <div className="reviewpage-form-inputs">
+                              <div className="form">
+                                <label>Rating</label>
+                                <div className="star-rating">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <RiStarSFill
+                                      key={star}
+                                      className={`star-icon ${
+                                        star <= reviewData.rating ? "selected" : ""
+                                      }`}
+                                      onClick={() => handleStarClick(star)}
+                                    />
+                                  ))}
+                                </div>
+                                {errors.rating && <p className="error-message">{errors.rating}</p>}
+                              </div>
+                              <div className="form">
+                                <label>Comments</label>
+                                <textarea
+                                  name="comments"
+                                  value={reviewData.comments}
+                                  onChange={handleChange}
+                                  maxLength={250}
+                                />
+                                {errors.comments && <p className="error-message">{errors.comments}</p>}
+                              </div>
+                            </div>
+
+                            <div className="reviewpage-buttons">
+                              <button type="submit" className="reviewpage-submit-button">
+                                Submit
+                              </button>
+                              <button type="button" className="clear-all-button" onClick={handleClear}>
+                                Clear All
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+
+                <div className="actionButtons">
+                  {/* Cancel Section */}
+                  {orderStatusId >= 1 && orderStatusId <= 3 && !cancelStatus?.isApproved && (
+                    <button
+                      className="cancelButton"
+                      onClick={() => setShowCancelModal(true)}
+                      disabled={loading.cancel}
+                    >
+                      {loading.cancel ? "Processing..." : "Cancel Order"}
+                    </button>
+                  )}
+
+                  {/* Return Section */}
+                  {orderStatusId === 6 && isEligibleForReturn() && !returnStatus && (
+                    <button
+                      className="returnButton"
+                      onClick={() => setShowReturnModal(true)}
+                      disabled={loading.return}
+                    >
+                      {loading.return ? "Processing..." : "Return Order"}
+                    </button>
+                  )}
+
+                  {/* Modal for Cancel Order */}
+                  {showCancelModal && (
+                    <div className="modal-overlay">
+                      <div className="modal-content">
+                        <div className="modal-header">
+                          <h2>Cancel Order</h2>
+                          <button
+                            className="close-modal-button"
+                            onClick={() => {
+                              setShowCancelModal(false);
+                              setCancelError("");
+                            }}
+                          >
+                            <IoClose />
+                          </button>
+                        </div>
+                        <div className="modal-body">
+                          <label>Reason</label>
+                          <textarea
+                            value={cancelReason}
+                            onChange={(e) => {
+                              setCancelReason(e.target.value);
+                              setCancelError("");
+                              
+                            }}
+                            placeholder="Enter reason for cancellation"
+                            maxLength={250}
+                          />
+                          {cancelError && <p className="error-message">{cancelError}</p>}
+                        </div>
+                        <div className="modal-footer">
+                          <button
+                            onClick={() => {
+                              setCancelReason("");
+                              setCancelError("");
+                            }}
+                            disabled={loading.cancel}
+                            className="clearButton"
+                          >
+                            Clear All
+                          </button>
+                          <button onClick={submitCancelOrder} disabled={loading.cancel}>
+                            {loading.cancel ? "Processing..." : "Submit"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Modal for Return Order */}
+                  {showReturnModal && (
+                    <div className="modal-overlay">
+                      <div className="modal-content">
+                        <div className="modal-header">
+                          <h2>Return Order</h2>
+                          <button
+                            className="close-modal-button"
+                            onClick={() => {
+                              setShowReturnModal(false);
+                              setReturnError("");
+                            }}
+                          >
+                            <IoClose />
+                          </button>
+                        </div>
+                        <div className="modal-body">
+                          <label>Reason</label>
+                          <textarea
+                            value={returnReason}
+                            onChange={(e) => {
+                              setReturnReason(e.target.value);
+                              setReturnError("");
+                            }}
+                            placeholder="Enter reason for return"
+                            maxLength={250}
+                          />
+                          {returnError && <p className="error-message">{returnError}</p>}
+                        </div>
+                        <div className="modal-footer">
+                          <button
+                            onClick={() => {
+                              setReturnReason("");
+                              setReturnError("");
+                            }}
+                            disabled={loading.return}
+                            className="clearButton"
+                          >
+                            Clear All
+                          </button>
+                          <button onClick={submitReturnOrder} disabled={loading.return}>
+                            {loading.return ? "Processing..." : "Submit"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                
+              </div>
+
+              <div className="back-btn">
           
-          </div>  
-          <div className="viewDetailsProduct">
-              
-            <ul>
-                <h4>User Details :</h4>    
-                <li><strong>Full Name:</strong> {orderDetails.shippingAddress.fullName}</li>
-                <li><strong>Phone Number:</strong> {orderDetails.shippingAddress.phoneNumber}</li>
-                <li><strong>Address Line 1:</strong> {orderDetails.shippingAddress.addressLine1}</li>
-                <li><strong>City:</strong> {orderDetails.shippingAddress.city}</li>
-                <li><strong>Postal Code:</strong> {orderDetails.shippingAddress.postalCode}</li>
-            </ul>
+                <button onClick={handleBack} className="go-back-btn">Back</button>
+              </div>
+            </div>
+        </div>
+         
+      
+
+      <div className="order-details">
+        <div className="order-details-container">
+          
+          <div className="orderdetails-content">
+            <div className="order-details-content-left">
+              <div className="order-details-head">
+                <h2>Order Item</h2>
+              </div>
+              <div className="content-left-container">
+                <div className="left-content1">
+                  <img src={orderDetails.imageUrl} alt="img" />
+                  <div className="content-left-content">
+                    <p>{orderDetails.productName}</p> 
+                    <p>{orderDetails.shopName}</p>
+                    <h3>{orderDetails.categoryName}</h3> <h3>||</h3>
+                    <h3>{orderDetails.subCategoryName}</h3>
+                  </div>
+                </div>
+                <div className="left-content2">
+                  <div className="left-content2-input">
+                    {orderDetails.quantity}X ₹{orderDetails.unitPrice}
+                  </div>
+                  <div className="left-content2-total">
+                    {orderDetails.totalAmount}
+                  </div>
+                </div>
+            
+              </div>
+            </div>
+
+              <div className="order-right-common">
+              <div className="order-details-content-right">
+                <h2>Customers</h2>
+               <div className="order-details-content-address">
+                  <p><FaRegUser /> {orderDetails.shippingAddress?.fullName}</p>
+
+                </div>
+              </div>
+
+              <div className="order-details-content-rights">
+                  <h2>Contact Information</h2>
+                  <div className="order-details-content-address">
+                  <p><IoCallOutline /> {orderDetails.userEmail}</p>
+                  <p><IoMailOutline /> {orderDetails.shippingAddress?.phoneNumber}</p>
+                </div>
+              </div>
+            </div>
+          
+          </div>
+
+          <div className="orderdetails-summary">
+            <div className="orderdetails-summary-left">
+
+              <div className="summary-head">
+                <h2>Order Summary</h2>
+                  <p
+                    className={
+                      {
+                        Pending: "status-pending",
+                        Confirmed: "status-confirmed",
+                        Packaging: "status-packaging",
+                        Shipped: "status-shipped",
+                        "Out for Delivery": "status-outfordelivery",
+                        Delivered: "status-delivered",
+                        Cancelled: "status-cancelled",
+                        Returned: "status-returned",
+                        Refunded: "status-refunded",
+                      }[orderDetails.orderStatusName] || ""
+                      }
+                    >
+                    {{
+                      Pending: "Pending",
+                      Confirmed: "Confirmed",
+                      Packaging: "Packaging",
+                      Shipped: "Shipped",
+                      "Out for Delivery": "Out for Delivery",
+                      Delivered: "Delivered",
+                      Cancelled: "Cancelled",
+                      Returned: "Returned",
+                      Refunded: "Refunded",
+                    }[orderDetails.orderStatusName] || ""}
+                  </p>
+                </div>
+
+                <div className="orderdetails-summary-left-content">
+                    <div className="summary-left">
+                        <p>Subtotal</p>
+                        <p>{orderDetails.subtotal}</p>
+                    </div>
+                    <div className="summary-left">
+                        <p>Tax</p>
+                        <p>{orderDetails.tax}</p>
+                    </div>
+                    <div className="summary-left">
+                        <p>Shipping</p>
+                        <p>{orderDetails.shippingCharge}</p>
+                    </div>
+                    <div className="summary-left">
+                        <b>Total</b>
+                        <p>{orderDetails.totalAmount}</p>
+                    </div>
+                </div>
+            </div>
+            <div className="orderdetails-summary-right">
+                <h2>Billing Address</h2> 
+                <div className="orderdetails-content-address">
+                <p><FaRegUser />  {orderDetails.shippingAddress?.fullName}</p>
+
+                <p><IoLocationOutline  />{orderDetails.shippingAddress?.addressLine1}</p>
+                <p> {orderDetails.shippingAddress?.addressLine2}</p>
+                <p> {orderDetails.shippingAddress?.countryName}</p>
+                <p> {orderDetails.shippingAddress?.postalCode}</p>
+                
+                </div>
+            </div>
           </div>
         </div>
-        
-        <div className="actionButtons">
-          {/* Cancel Section */}
-          {orderStatusId >= 1 && orderStatusId <= 3 && !cancelStatus?.isApproved && (
-            cancelStatus ? (
-              cancelStatus.isApproved ? (
-                <p style={{ color: "green" }}>
-                  Order has been canceled successfully.
-                </p>
-              ) : (
-                <p style={{ color: "green" }}>
-                  Order cancellation is being processed.
-                </p>
-              )
-            ) : (
-              <button
-                className="cancelButton"
-                onClick={handleCancelOrder}
-                disabled={loading.cancel}
-              >
-                {loading.cancel ? "Processing..." : "Cancel Order"}
-              </button>
-            )
-          )}
-
-          {/* Return Section */}
-          {orderStatusId === 6 && (
-            isEligibleForReturn() ? (
-              returnStatus ? (
-                <p style={{ color: "green" }}>
-                  {returnStatus.isApproved
-                    ? "Order has been returned successfully."
-                    : "Order return is being processed."}
-                </p>
-              ) : (
-                <button className="returnButton" onClick={handleReturnOrder} disabled={loading.return}>
-                  {loading.return ? "Processing..." : "Return Order"}
-                </button>
-              )
-            ) : (
-              <p style={{ color: "red" }}>Product is no longer eligible for return.</p>
-            )
-        )}
-
-        </div>
-
-
       </div>
+        
+      </div>
+
+  
     </div>
   );
-};
+};  
 
 export default ViewDetails;
